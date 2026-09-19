@@ -1,0 +1,720 @@
+{
+  // BIOBUZZ, the 2026-2027 FTC game, as a field file.
+  //
+  // DECODE is untouched and still selectable. This is a second field beside it, and everything
+  // here is data: the simulator has no BIOBUZZ in it and is not meant to.
+  //
+  // EVERY NUMBER IN THIS FILE IS MEASURED OR CITED, and docs/biobuzz/MEASURED.md says which for
+  // each one. The measurements come off the official AndyMark field CAD, read by
+  // tools/biobuzz-measure.js into docs/biobuzz/measured.json, and tools/check-step-extract.js
+  // holds those against the competition manual's own published dimensions -- 59 checks, two
+  // independent documents, and it runs on a machine that has never seen the CAD.
+  //
+  // LENGTHS ARE IN INCHES, which is how a field is measured and how the manual writes it.
+  //
+  // ---- The frame -------------------------------------------------------------------------------
+  //
+  // x = 0 is the RED alliance's wall, y = 0 is the AUDIENCE wall, z is up from the tile. Same
+  // shape as DECODE's and the same as Pedro Pathing's.
+  //
+  // CHECKED, NOT CHOSEN. Manual 9.5: "The FIELD is oriented such that the red ALLIANCE AREA is
+  // located on the left from the primary audience viewing direction." Standing at y = 0 facing
+  // +y with +z up, right is +x -- so left is -x, and red is at low x. The CAD agrees
+  // independently: the Red Hive sits at negative CAD x and the Blue Hive at positive.
+  //
+  // THE FIELD IS NOT REALLY 144 IN ACROSS. The CAD puts the polycarbonate a robot touches at
+  // +/-70.674 from the centre, so a real field is 141.35 -- six 23.5 in tiles, not six nominal
+  // 24s. 144 is used here anyway, because the manual says 144, FIRST publish AprilTag poses in a
+  // 144 frame, and so does every path library a team might use; disagreeing with the team's own
+  // code is a worse error than 1.33 in. The mapping from the CAD is rigid, so everything keeps
+  // its true shape and its true relation to everything else, and the whole field simply sits
+  // 1.33 in further from each wall than a real one. MEASURED.md has the long version.
+
+  "name": "BIOBUZZ (2026-2027)",
+  "description": "Competition layout, Competition Manual V1 sections 9.2-9.9 and 10.3.1. Measured from the official field CAD. The HIVE tips and its AprilTags move with it; FLOWERS hold an ordered stack; LEAVE, PARK, GARDEN and the RANKING POINTS all score. No opponent and no penalties, so a total is an upper bound.",
+
+  // Manual 10.3.1 A.iv and G304-G: "4 POLLEN pre-loaded in each ROBOT", and a ROBOT "must start
+  // the MATCH contacting 4 pre-loaded POLLEN". Four is the number, not a maximum a team chooses.
+  "maxPreload": 4,
+
+  // ...and they are POLLEN. Said out loud rather than left to the order of the "pieces" array
+  // below, which is what the simulator used to fall back on: with three piece types, "whichever
+  // is declared first" means reordering that list for readability would quietly load every robot
+  // with NECTAR.
+  "preloadPiece": "pollen",
+
+  // Manual G407: "A ROBOT may not simultaneously CONTROL more than 4 SCORING ELEMENTS."
+  //
+  // A property of the GAME, not of the robot, which is why it lives here beside maxPreload: a
+  // ten-ball hopper is legal to build and illegal to fill, and a simulator that let a team fill
+  // one would be teaching them a cycle that draws a MAJOR FOUL and a YELLOW CARD. DECODE has no
+  // such rule and its field file leaves this out.
+  "maxControlled": 4,
+
+  // ---- What is NOT here yet, and why ---------------------------------------------------------
+  //
+  // This file is honest about being incomplete rather than approximately complete, because an
+  // approximation a student cannot see through is worse than an absence they can.
+  //
+  //   NO OPPONENT IS DECLARED HERE, so WIN and TIE report nothing and a FLOWER you fill stays
+  //     yours for the match. Both of those are the "opponent" block's doing, and it is left out
+  //     on purpose: an opponent is what happened in one particular MATCH, and everything else in
+  //     this file is a fact about the FIELD that is the same for everybody playing the season.
+  //
+  //     To practise against one, copy this file and add:
+  //
+  //       "opponent": {
+  //         "name": "Blue alliance", "alliance": "blue",
+  //         "events": [
+  //           { "atSeconds": 95, "flower": "Red-wall FLOWER", "piece": "blue nectar" },
+  //           { "atSeconds": 150, "points": 40 }
+  //         ]
+  //       }
+  //
+  //     An event with a flower and a piece drops one in -- which is how a FLOWER changes hands.
+  //     An event with points banks them, for WIN and TIE to compare against. Times are seconds
+  //     of MATCH time from the start of AUTO, and nothing about the script reacts to what your
+  //     robot does: it is a recording of an opponent, not an opponent.
+  //
+  //   THERE ARE NO PENALTIES. No FOULS, no CARDS, no referee -- so a total is an UPPER BOUND, the
+  //     same caveat DECODE's artifact counts carry. G410 (no NECTAR into a FLOWER before the last
+  //     60 seconds) is reported as a flagged line rather than blocked, for that reason.
+  //
+  //   THE CELLS' 30-DEGREE TILT IS IN THE POSE, NOT IN THE CATCH. A ball is accepted if it falls
+  //     through the mouth's footprint, which is the test a goal uses. The real opening is a tilted
+  //     rectangle, so a shot arriving shallow on the low side would in life clip the rim.
+
+  // ---- The pieces ------------------------------------------------------------------------------
+  //
+  // DIAMETERS ARE MEASURED, off the CAD's own sphere radii rather than off a bounding box. Both
+  // balls are modelled with splined surfaces whose control points sit well outside the ball --
+  // the boxes read 4.5 and 5.9 in for a 2.8 and a 3.6 -- so the box is useless and the radius is
+  // exact. Manual 9.8 says "approximately 2.8 in" and "approximately 3.6 in"; the CAD says 2.835
+  // and 3.622.
+  //
+  // THE MASSES ARE MEASURED: one team weighed one of each on 14 Sept 2026. POLLEN 0.055 lb,
+  // NECTAR 0.091 lb, which are 24.9 g and 41.3 g. The manual gives neither ball a mass and the CAD
+  // carries no material, so until then these were scaled from the DECODE artifact by surface area
+  // (24 g and 39 g, ASSUMED). Mass is what a shot costs a flywheel, and it sets the HIVE's
+  // tipping mass below.
+  //
+  // THE COLOURS MATTER MORE THAN THEY LOOK. A Limelight colour pipeline keys on them, so a
+  // simulator that disagrees with the real ball about what "yellow" is will send a robot at the
+  // wrong things. Sample the real ball in the Limelight web interface, under the lighting you
+  // practise in, and put that hex here.
+  "pieces": [
+    { "name": "pollen",      "colour": "#F2D544", "diameter": 2.835, "massKg": 0.0249 },
+    { "name": "red nectar",  "colour": "#D03030", "diameter": 3.622, "massKg": 0.0413 },
+    { "name": "blue nectar", "colour": "#3060D0", "diameter": 3.622, "massKg": 0.0413 }
+  ],
+
+  // ---- Where they start ------------------------------------------------------------------------
+  //
+  // Manual 10.3.1 A.ii and A.iii: "4 POLLEN in the red GARDEN (4)" and the same in blue, "placed
+  // in a line starting in the corner closest to the ALLIANCE AREA and contacting the audience or
+  // rear perimeter wall".
+  //
+  // These eight positions are the CAD's own staged POLLEN, not a reading of the prose: measured
+  // at a 2.89 in pitch, which is one ball diameter, so the four touch. That pitch independently
+  // corroborates the 2.835 in diameter above.
+  "staging": [
+    {
+      "piece": "pollen",
+      "at": [
+        [2.73, 2.73], [5.62, 2.73], [8.51, 2.73], [11.4, 2.73],
+        [132.6, 141.27], [135.49, 141.27], [138.38, 141.27], [141.27, 141.27]
+      ]
+    }
+  ],
+
+  // ---- The match -------------------------------------------------------------------------------
+  //
+  // Manual 10.1: "a 30-second AUTO period, an 8-second transition period between AUTO and TELEOP,
+  // and a 2-minute TELEOP period".
+  //
+  // NO ENDGAME, and that is not an omission. BIOBUZZ has no endgame period -- what it has instead
+  // is a gate at one minute remaining (G410: NECTAR may not enter a FLOWER until the last 60
+  // seconds), which is a different shape of thing and is not a period boundary. Declaring an
+  // endgame here to stand in for it would make the clock say something untrue.
+  "match": {
+    "autonomousS": 30,
+    "transitionS": 8,
+    "teleopS": 120,
+    "endgameS": 0
+  },
+
+  // ---- The HIVE ------------------------------------------------------------------------------------
+  //
+  // Two CELLS on an axle 43.95 in up, bi-stable, one facing up and one facing down. Launch enough
+  // into the upward one and it TIPS -- 20 points, either period (Table 10-2) -- the cells swap,
+  // and whatever was in the one now pointing down falls out.
+  //
+  // THE FIRST TARGET ON ANY FIELD HERE THAT MOVES. A team that tunes a shot against the
+  // start-of-match geometry and then scores with it has moved the thing they were aiming at, and
+  // the four AprilTags under each CELL move with it.
+  //
+  // THE KINEMATICS ARE MEASURED AND THE DERIVATION CHECKS ITSELF. The CAD ships the two hives
+  // tipped opposite ways, so red's cells and blue's cells are the same two cells photographed in
+  // both stable states. The pivot is the point equidistant from them: 43.95 in, which is exactly
+  // what 9.6.1 publishes, with the two arms agreeing to 0.000 in and the angle between the states
+  // coming out at 60.00 degrees -- corroborated by the tag normals, measured separately, sitting
+  // 30 degrees off horizontal. docs/biobuzz/MEASURED.md has the working.
+  //
+  // Rotation is about the x axis, so a CELL's x never changes and the two cells of a hive carry
+  // the same pair of body angles. Blue simply starts in the other state, which is 10.3.1's "each
+  // HIVE is tilted such that one CELL is pointed down, and the other CELL is pointed up".
+  //
+  // WHICH END IS UP IS THE HIGH ONE, and this file had it backwards until 12 Sept 2026. A CELL
+  // is a box hanging off the bar with its floor along the bar, so its MOUTH -- 20 wide by 14
+  // tall (9.6.2), the 12 is the depth -- faces outward along the bar: 30 degrees above
+  // horizontal at the high end, 30 below at the low end. Three things say so and ProbeHive
+  // checks each: figure 10-2 draws red's upward CELL on the audience side and blue's on the far
+  // side, which are the high ends here; the CAD stages the NECTAR in those two cells; and the
+  // AprilTag stickers on both of a hive's cell floors share one normal, 60 degrees below
+  // horizontal, which parallel boxes on a bar have and lidded buckets on a see-saw do not.
+  // 10.3.1's rule of thumb agrees: "the CELL which 'points at' a FLOWER should be the one
+  // tilted down" -- the low end of the red hive points at the far-wall FLOWER and the low end
+  // of the blue hive at the audience-wall one. The "x" and "bodyAngleDeg" below are the box
+  // CENTRES from the CAD; Hive.java puts the mouth half a depth outward from there.
+  //
+  // ---- A HIVE TIPS ON WEIGHT, AND THE WEIGHT IS MEASURED --------------------------------------
+  //
+  // Manual V1 says only "when enough SCORING ELEMENTS are LAUNCHED into the CELL, the HIVE will
+  // tip". It never gives a number, because it is a mechanical property of a bi-stable linkage and
+  // not a rule. Until 13 Sept 2026 this file carried a guess, "tipThreshold": 6 pieces, inferred
+  // from the ranking points.
+  //
+  // BALLS IN A REAL HIVE (MEASURED, 13 Sept 2026):
+  //
+  //   7 POLLEN            does not tip        3 NECTAR + 2 POLLEN   does not tip
+  //   8 POLLEN            tips                3 NECTAR + 3 POLLEN   tips
+  //
+  // NO PIECE COUNT FITS THOSE. 8 pieces tip and 6 pieces tip, but 7 pieces do not. The MASSES do,
+  // with the pieces' own masses from the "pieces" list above:
+  //
+  //   7P = 0.1743 kg and 3N+2P = 0.1737 kg stay put; 3N+3P = 0.1986 kg and 8P = 0.1992 kg tip.
+  //
+  // So the load that tips it lies in (0.1743, 0.1986] kg, and "tipMassKg" is the middle of that,
+  // 0.186 -- DERIVED. Anything between the two ends is ASSUMED: nobody has tried 0.180 or 0.195.
+  // (With the ASSUMED 24 g and 39 g it was 0.178, in (0.168, 0.189].)
+  //
+  // THE WEIGHED BALLS AGREE WITH THE TABLE. A sum of masses can only reproduce it for a NECTAR
+  // between 4/3 and 2 POLLEN, and the scale says 41.3 g / 24.9 g = 1.66, so no ball positions in
+  // the CELL are needed to explain it.
+  // 3 staged NECTAR are 0.124 kg, which is why the start of a match does not tip it; the first tip
+  // then takes 3 POLLEN, or 2 NECTAR, or one of each, and every tip after it starts from an empty
+  // CELL and takes 8 POLLEN or 5 NECTAR.
+  //
+  // ---- TIP TIME BY LOAD ----------------------------------------------------------------------------
+  //
+  // The CAD hangs a "Blumotion 970A Damper" off the pivot (am-5865, in am-5864 Pivot Damper
+  // Holder) -- the soft-close cylinder out of a kitchen drawer -- which exists to make the swing
+  // slow and the arrival gentle. One team timed two (MEASURED): 8 POLLEN take 4 s, 5 NECTAR take
+  // 3 s. A mixed load takes the MASS-WEIGHTED MEAN of its pieces' times (Hive.tipSecondsFor), which
+  // gives both measurements back exactly; 3 NECTAR + 3 POLLEN comes out at 3.4 s, and that and every
+  // other mix is ASSUMED. "tipSeconds" stays as the time for a piece with no entry here.
+  //
+  // tipThreshold is ignored while tipMassKg is set. It is left at 6 so the old number is on record.
+  // ---- THE MOUTH IS A HOUSE, NOT A RECTANGLE -----------------------------------------------------
+  //
+  // 9.6.2's "approximately 20 in wide by 14 in tall" is the BOUNDING BOX. Figure 9-11 dimensions
+  // the opening itself and it is a PENTAGON: 20 in across, vertical sides 7.61 in tall, and then
+  // a roof rising to a peak 14 in from the bottom edge. That is the shape the coloured tube frame
+  // round each pod is bent into, and what any photograph of a real HIVE shows.
+  //
+  // The CAD agrees, measured separately: am-5866 Goal Rib, the frame at each end of a pod, has a
+  // flat edge, sides of 7.8 in and a peak 13.7 in from the flat (docs/biobuzz/MEASURED.md). So
+  // two independent sources give the same pentagon, and the 20 x 14 rectangle this file carried
+  // until 12 Sept 2026 was 23% too generous -- a shot through either top corner scored.
+  //
+  // "openingShape" is [across, toward the peak] in inches, from the centre of the mouth. The
+  // second axis runs from the CELL's floor toward its roof, which for both cells of a hive is
+  // up-and-outward however the hive is tilted (figure 9-10 draws all four pods roof-up), so one
+  // shape is right in both stable states and everywhere between them. openingWidth and
+  // openingHeight stay: they are the bounding box, and the box BEHIND the mouth -- what a ball
+  // bounces off, where the contents sit, where a spilled one leaves from -- is still a box.
+  //
+  // ---- tipSeconds ---------------------------------------------------------------------------------
+  //
+  // 0.9 s, ASSUMED, is what the game animation looks like, and it is now only the fallback for a
+  // piece tipSecondsByPiece does not name (none, on this field). Set it and tipSecondsByPiece to 0
+  // and the hive jumps between states, which is what a pivot with no damper on it would do.
+  "hives": [
+    { "name": "Red HIVE", "alliance": "red",
+      "pivotY": 72, "pivotHeight": 43.95, "arm": 16.276, "tipAngleDeg": 60,
+      "tipThreshold": 6, "startState": 0, "tipSeconds": 0.9,
+      "tipMassKg": 0.186,
+      "tipSecondsByPiece": { "pollen": 4, "red nectar": 3, "blue nectar": 3 },
+      "cells": [
+        { "name": "Red CELL (far)", "x": 58.97, "bodyAngleDeg": -11.63,
+          "openingWidth": 20, "openingHeight": 14, "openingDepth": 12, "tags": [33, 32, 31, 30],
+          "openingShape": [[-10, -7], [10, -7], [10, 0.61], [0, 7], [-10, 0.61]] },
+        { "name": "Red CELL (audience)", "x": 59.55, "bodyAngleDeg": 131.63,
+          "openingWidth": 20, "openingHeight": 14, "openingDepth": 12, "tags": [34, 35, 36, 37],
+          "openingShape": [[-10, -7], [10, -7], [10, 0.61], [0, 7], [-10, 0.61]],
+          "staged": ["red nectar", "red nectar", "red nectar"] }
+      ] },
+    { "name": "Blue HIVE", "alliance": "blue",
+      "pivotY": 72, "pivotHeight": 43.95, "arm": 16.276, "tipAngleDeg": 60,
+      "tipThreshold": 6, "startState": 1, "tipSeconds": 0.9,
+      "tipMassKg": 0.186,
+      "tipSecondsByPiece": { "pollen": 4, "red nectar": 3, "blue nectar": 3 },
+      "cells": [
+        { "name": "Blue CELL (far)", "x": 84.47, "bodyAngleDeg": -11.63,
+          "openingWidth": 20, "openingHeight": 14, "openingDepth": 12, "tags": [45, 44, 43, 42],
+          "openingShape": [[-10, -7], [10, -7], [10, 0.61], [0, 7], [-10, 0.61]],
+          "staged": ["blue nectar", "blue nectar", "blue nectar"] },
+        { "name": "Blue CELL (audience)", "x": 85.05, "bodyAngleDeg": 131.63,
+          "openingWidth": 20, "openingHeight": 14, "openingDepth": 12, "tags": [38, 39, 40, 41],
+          "openingShape": [[-10, -7], [10, -7], [10, 0.61], [0, 7], [-10, 0.61]] }
+      ] }
+  ],
+
+  // ---- The FLOWERS, as containers -----------------------------------------------------------------
+  //
+  // The structures list below draws four FLOWERS and stops a robot driving through them. THIS is
+  // what catches a ball. They are separate declarations because they are separate facts: a
+  // structure is a shape, and a flower is a shape AND a place pieces go.
+  //
+  // A FLOWER IS A STACK, which is the first thing on any field in this project that remembers an
+  // ORDER. Manual 10.5.2 asks two questions of the same tube from opposite ends -- who has the
+  // BOTTOM-most scoring NECTAR, and who has the TOP-most -- and they have different answers and
+  // different point values. The same four balls are worth 8 to one alliance or 8 to the other
+  // depending entirely on whose NECTAR is on top.
+  //
+  // Every number measured; see docs/biobuzz/MEASURED.md.
+  //   openingHeight    21.404   manual 9.7 "approximately 21.5 in above the TILES"
+  //   openingDiameter   4.016   manual 9.7 "approximately 4 in in diameter"
+  //   scoreBottom       5.293   the top of the middle ring, am-5858
+  //   scoreTop         20.216   the bottom of the top ring, am-5857. Manual 10.5.2: the scoring
+  //                             volume is "between the top ring and the middle ring"
+  //   floorHeight       0       the TILE, and not the 0.73 in lower ring, which is the trap here.
+  //                             Manual 9.7: the lower ring has "an hole for POLLEN to sit IN
+  //                             that is approximately 2.79 in diameter" -- so a ball drops
+  //                             through it and rests on the floor. The CAD agrees and is what
+  //                             caught this: its staged POLLEN sit at 1.40, 4.29, 7.18 and
+  //                             10.07 in, and the lowest of those is one ball radius off the
+  //                             TILE. Resting the stack on the ring instead lifts every piece
+  //                             in every FLOWER by three quarters of an inch.
+  //   retrievalHeight   3.550   manual 9.7, and the reason NECTAR is stuck -- see below
+  //   gateRemainingS   60      G410: "ROBOTS may not enter NECTAR into the FLOWER scoring volume
+  //                             until the last 60 seconds of the MATCH." NOTICED, NOT PREVENTED:
+  //                             this project has no referee and nothing subtracts, so the ball
+  //                             goes in and the scoreboard carries a line saying it should not
+  //                             have. A team whose autonomous drops NECTAR in at 1:30 has to
+  //                             learn that here rather than from a REFEREE.
+  //
+  // WHY NECTAR CANNOT COME BACK OUT, AND WHY THAT IS NOT HARD-CODED. Manual 9.7 says POLLEN can
+  // be removed from the bottom. It never says NECTAR cannot, and it does not need to: the
+  // retrieval opening is 3.55 in tall and 9.8 makes NECTAR 3.6 in across. 3.6 does not fit
+  // through 3.55. The geometry is the rule, so it is these two numbers rather than a special
+  // case in code -- and if AndyMark revise either one, the behaviour follows.
+  "flowers": [
+    { "name": "Red-wall FLOWER", "x": 3.96, "y": 48.61,
+      "openingHeight": 21.404, "openingDiameter": 4.016,
+      "scoreBottom": 5.293, "scoreTop": 20.216, "floorHeight": 0, "retrievalHeight": 3.55,
+      "gateRemainingS": 60, "gatedPieces": ["red nectar", "blue nectar"],
+      "staged": ["pollen", "pollen", "pollen", "pollen"] },
+    { "name": "Far-wall FLOWER", "x": 48.61, "y": 140.04,
+      "openingHeight": 21.404, "openingDiameter": 4.016,
+      "scoreBottom": 5.293, "scoreTop": 20.216, "floorHeight": 0, "retrievalHeight": 3.55,
+      "gateRemainingS": 60, "gatedPieces": ["red nectar", "blue nectar"],
+      "staged": ["pollen", "pollen", "pollen", "pollen"] },
+    { "name": "Audience-wall FLOWER", "x": 95.39, "y": 3.96,
+      "openingHeight": 21.404, "openingDiameter": 4.016,
+      "scoreBottom": 5.293, "scoreTop": 20.216, "floorHeight": 0, "retrievalHeight": 3.55,
+      "gateRemainingS": 60, "gatedPieces": ["red nectar", "blue nectar"],
+      "staged": ["pollen", "pollen", "pollen", "pollen"] },
+    { "name": "Blue-wall FLOWER", "x": 140.04, "y": 95.39,
+      "openingHeight": 21.404, "openingDiameter": 4.016,
+      "scoreBottom": 5.293, "scoreTop": 20.216, "floorHeight": 0, "retrievalHeight": 3.55,
+      "gateRemainingS": 60, "gatedPieces": ["red nectar", "blue nectar"],
+      "staged": ["pollen", "pollen", "pollen", "pollen"] }
+  ],
+
+  // ---- Zones -------------------------------------------------------------------------------------
+  //
+  // READ OFF THE TAPE ITSELF. Every strip on this field is a separate named part in the CAD with
+  // its own length in its own name -- "Gaffer Tape, Red, 1in Wide, 22.69in Long" -- so no zone
+  // here is placed by eye, and each one's measured size is checked against the manual's stated
+  // size by tools/check-step-extract.js.
+  //
+  // Manual 9.3:
+  //   LOADING ZONE   "approximately 23 in wide by 11 in deep"   measured 22.69 x 11.00
+  //   GARDEN         "approximately 23 in by 2 in wide"          measured 22.69 x 2.00
+  //   ALLIANCE AREA  "approximately 97 in wide by 54 in deep"    measured 96.82 x 54.00
+  //
+  // THE GARDENS ARE IN OPPOSITE CORNERS and each is the one nearest its own ALLIANCE AREA
+  // (10.3.1). Getting that backwards mirrors the whole game while looking entirely plausible,
+  // which is a mistake DECODE's field file records having made once, so it is asserted.
+  //
+  // The ALLIANCE AREAS are outside the field and are carried for drawing and for saying where a
+  // human player stands. Nothing scores in them.
+  "zones": [
+    { "name": "Red GARDEN", "alliance": "red", "purpose": "score", "colour": "red",
+      "footprint": [[1.9, 1.9], [24.59, 1.9], [24.59, 3.9], [1.9, 3.9]] },
+    { "name": "Blue GARDEN", "alliance": "blue", "purpose": "score", "colour": "blue",
+      "footprint": [[119.41, 140.1], [142.1, 140.1], [142.1, 142.1], [119.41, 142.1]] },
+
+    { "name": "Red LOADING ZONE", "alliance": "red", "purpose": "park", "colour": "red",
+      "footprint": [[1.9, 95.91], [12.9, 95.91], [12.9, 118.6], [1.9, 118.6]] },
+    { "name": "Blue LOADING ZONE", "alliance": "blue", "purpose": "park", "colour": "blue",
+      "footprint": [[131.1, 25.4], [142.1, 25.4], [142.1, 48.09], [131.1, 48.09]] }
+  ],
+
+  // ---- What any of it is worth -------------------------------------------------------------------
+  //
+  // Manual Table 10-2. Only the rules this format can express today are here, and the ones that
+  // are absent are listed at the top of this file rather than approximated.
+  //
+  // PARK IS TWO RULES, NOT ONE. Table 10-2 gives PARK 5 points in AUTO and 5 again in TELEOP, so
+  // a robot that parks at the end of autonomous and again at the buzzer scores it twice. One rule
+  // latched at one moment would quietly halve it.
+  //
+  // A GARDEN SCORES FOR ITS OWN COLOUR WHOEVER FILLED IT. Manual 10.5.3: "GARDENS are ALLIANCE
+  // SPECIFIC and earn points for the ALLIANCE of corresponding color regardless of which ALLIANCE
+  // placed the POLLEN or NECTAR", and "NECTAR belonging to either ALLIANCE and POLLEN scores in
+  // the GARDEN for the ALLIANCE that corresponds with the color of the GARDEN". So the rule has
+  // no "piece" filter -- deliberately, because any piece counts.
+  //
+  // NOTHING HERE SUBTRACTS. There is no penalty model, no opposing alliance and no referee, so a
+  // total is an upper bound -- the same caveat DECODE's counts carry.
+  "scoring": [
+    { "name": "Red GARDEN", "type": "inZone", "zone": "Red GARDEN", "alliance": "red",
+      "points": 1, "when": "endOfMatch" },
+    { "name": "Blue GARDEN", "type": "inZone", "zone": "Blue GARDEN", "alliance": "blue",
+      "points": 1, "when": "endOfMatch" },
+
+    // ---- LEAVE, Table 10-2: 3 points, AUTO only -------------------------------------------------
+    //
+    // Manual 10.5.4: "To qualify for LEAVE points, a ROBOT must move so that it is no longer
+    // contacting the perimeter wall." Assessed at the end of AUTO (10.5 F).
+    //
+    // WHAT IS LATCHED IS THAT IT HAPPENED, not where the robot finished. Read instantaneously at
+    // the buzzer this would punish exactly the autonomous a team should be writing: leave the
+    // wall, score, then PARK -- which puts the robot back against a wall, because the LOADING
+    // ZONE is bounded by one.
+    { "name": "Red LEAVE", "type": "leave", "alliance": "red",
+      "points": 3, "when": "endOfAuto" },
+    { "name": "Blue LEAVE", "type": "leave", "alliance": "blue",
+      "points": 3, "when": "endOfAuto" },
+
+    { "name": "Red AUTO PARK", "type": "inZone", "zone": "Red LOADING ZONE", "subject": "robot",
+      "alliance": "red", "points": 5, "when": "endOfAuto" },
+    { "name": "Blue AUTO PARK", "type": "inZone", "zone": "Blue LOADING ZONE", "subject": "robot",
+      "alliance": "blue", "points": 5, "when": "endOfAuto" },
+
+    { "name": "Red TELEOP PARK", "type": "inZone", "zone": "Red LOADING ZONE", "subject": "robot",
+      "alliance": "red", "points": 5, "when": "endOfMatch" },
+    { "name": "Blue TELEOP PARK", "type": "inZone", "zone": "Blue LOADING ZONE", "subject": "robot",
+      "alliance": "blue", "points": 5, "when": "endOfMatch" },
+
+    // ---- The FLOWERS ---------------------------------------------------------------------------
+    //
+    // Two rules per alliance, read from opposite ends of the same stack.
+    //
+    // BOTTOM NECTAR BONUS, 5 per FLOWER. "The ALLIANCE that has the bottom-most NECTAR of its
+    // color that meets the criteria for scoring in a FLOWER earns points." Once earned, piling
+    // more on top cannot take it away -- which is what reading from the bottom means.
+    //
+    // FLOWER OWNER, 2 per piece. "The ALLIANCE that has the top-most NECTAR of its color ... owns
+    // that FLOWER and will earn points for every POLLEN and NECTAR that meet the scoring criteria
+    // for that FLOWER, regardless of which ALLIANCE placed [them]." So an opponent's last NECTAR
+    // takes the whole tube, including the pieces you put there. No "piece" filter, deliberately:
+    // the owner scores every piece in the volume, whoever it belongs to.
+    //
+    // BOTH ARE LIVE, not latched. Manual 10.5 D: "Assessment of SCORING ELEMENTS scored in a
+    // FLOWER will occur THROUGHOUT the MATCH with final assessment taking place at the end of
+    // TELEOP." So these read "always" -- a driver watching the scoreboard sees a FLOWER change
+    // hands the moment it changes hands, which is the thing they have to react to. Contrast the
+    // GARDENS above, which 10.5 E assesses only at the end.
+    //
+    // Both count only what is in the SCORING VOLUME -- a piece resting below the middle ring is
+    // in the FLOWER and worth nothing.
+    { "name": "Red bottom NECTAR bonus", "type": "flowerBottomNectar", "alliance": "red",
+      "points": 5, "when": "always" },
+    { "name": "Blue bottom NECTAR bonus", "type": "flowerBottomNectar", "alliance": "blue",
+      "points": 5, "when": "always" },
+
+    { "name": "Red owned FLOWER", "type": "flowerOwned", "alliance": "red",
+      "points": 2, "when": "always" },
+    { "name": "Blue owned FLOWER", "type": "flowerOwned", "alliance": "blue",
+      "points": 2, "when": "always" },
+
+    // ---- The HIVE ------------------------------------------------------------------------------
+    //
+    // HIVE TIP, 20 points, and the same 20 in AUTO as in TELEOP (Table 10-2). 10.5 B splits them
+    // by period for reporting -- "TIPS that are complete prior to the start of TELEOP are assessed
+    // as part of AUTO" -- which changes no total, because the two values are equal. Where it does
+    // matter is the POLLINATOR ranking points, which count tips, and those arrive with the rest of
+    // the RP in Sprint 51.
+    //
+    // Live, because 10.5 A assesses tips throughout the match.
+    { "name": "Red HIVE TIP", "type": "hiveTip", "alliance": "red",
+      "points": 20, "when": "always" },
+    { "name": "Blue HIVE TIP", "type": "hiveTip", "alliance": "blue",
+      "points": 20, "when": "always" },
+
+    // POLLEN and/or NECTAR remaining in CELL, 2 each, TELEOP only. 10.5.1 is specific that it is
+    // the UPWARD-facing CELL: whatever was in the other one fell on the floor when the hive last
+    // tipped, which is why the model spills it rather than quietly keeping it.
+    //
+    // Latched at the end, because 10.5 C assesses it "after all SCORING ELEMENTS and ROBOTS have
+    // come to rest at the conclusion of the MATCH" -- a cell full at 1:30 and emptied by a tip at
+    // 1:31 is worth nothing.
+    { "name": "Red elements in CELL", "type": "inCell", "alliance": "red",
+      "points": 2, "when": "endOfMatch" },
+    { "name": "Blue elements in CELL", "type": "inCell", "alliance": "blue",
+      "points": 2, "when": "endOfMatch" },
+
+    // ---- RANKING POINTS, Table 10-2's last rows ---------------------------------------------------
+    //
+    // A DIFFERENT CURRENCY, and the scoreboard keeps them apart. Table 10-2 pays 20 MATCH points
+    // for a HIVE TIP and 1 RANKING POINT for having made four of them; a total of 21 would be
+    // describing a game nobody is playing.
+    //
+    // These are not scoring actions, they are THRESHOLDS over the actions above -- so each one
+    // names the rules it reads. SWARM adds up LEAVE and PARK POINTS; POLLINATOR counts TIPS, which
+    // is a different question about the same rule and is why "measure" exists.
+    //
+    // Table 10-3's numbers are for "All Other Events". Regional Championships and the FIRST
+    // Championship are TBA and Premier Events set their own, which is exactly why the thresholds
+    // are here rather than in the code.
+    { "name": "Red SWARM RP", "type": "threshold", "alliance": "red", "measure": "points",
+      "atLeast": 16, "points": 1, "when": "endOfMatch",
+      "over": ["Red LEAVE", "Red AUTO PARK", "Red TELEOP PARK"] },
+    { "name": "Blue SWARM RP", "type": "threshold", "alliance": "blue", "measure": "points",
+      "atLeast": 16, "points": 1, "when": "endOfMatch",
+      "over": ["Blue LEAVE", "Blue AUTO PARK", "Blue TELEOP PARK"] },
+
+    { "name": "Red POLLINATOR 1 RP", "type": "threshold", "alliance": "red", "measure": "count",
+      "atLeast": 4, "points": 1, "when": "endOfMatch", "over": ["Red HIVE TIP"] },
+    { "name": "Blue POLLINATOR 1 RP", "type": "threshold", "alliance": "blue", "measure": "count",
+      "atLeast": 4, "points": 1, "when": "endOfMatch", "over": ["Blue HIVE TIP"] },
+
+    { "name": "Red POLLINATOR 2 RP", "type": "threshold", "alliance": "red", "measure": "count",
+      "atLeast": 7, "points": 1, "when": "endOfMatch", "over": ["Red HIVE TIP"] },
+    { "name": "Blue POLLINATOR 2 RP", "type": "threshold", "alliance": "blue", "measure": "count",
+      "atLeast": 7, "points": 1, "when": "endOfMatch", "over": ["Blue HIVE TIP"] },
+
+    // G410, reported and not charged. Worth zero points, so it changes no total -- it is on the
+    // scoreboard to be SEEN. Violation in the real game: MAJOR FOUL per NECTAR, which is 20
+    // points to the opponent and is not something this model can pay.
+    { "name": "NECTAR entered a FLOWER early (G410)", "type": "violation",
+      "points": 0, "when": "always" },
+
+    // ---- WIN and TIE, Table 10-2's last two rows ------------------------------------------------
+    //
+    // The only rules in the game that cannot be answered by looking at your own alliance: 3
+    // RANKING POINTS for more MATCH points than the opponent, 1 for the same number.
+    //
+    // THEY REPORT NOTHING UNLESS AN OPPONENT IS DECLARED, which this field does not do -- see the
+    // note at the top about "opponent". A missing opponent is not an opponent on zero: reading it
+    // that way would hand out 3 RP for turning up, every match. So these lines sit here, correct
+    // and silent, until somebody puts an opponent in the field they are practising against.
+    //
+    // "atLeast" carries the margin: 1 means strictly more, 0 means exactly equal.
+    { "name": "Red WIN", "type": "beatOpponent", "alliance": "red",
+      "atLeast": 1, "points": 3, "when": "endOfMatch" },
+    { "name": "Blue WIN", "type": "beatOpponent", "alliance": "blue",
+      "atLeast": 1, "points": 3, "when": "endOfMatch" },
+    { "name": "Red TIE", "type": "beatOpponent", "alliance": "red",
+      "atLeast": 0, "points": 1, "when": "endOfMatch" },
+    { "name": "Blue TIE", "type": "beatOpponent", "alliance": "blue",
+      "atLeast": 0, "points": 1, "when": "endOfMatch" }
+  ],
+
+  // ---- The things a robot can hit -------------------------------------------------------------
+  //
+  // A structure is a FOOTPRINT and a HEIGHT, in this file's frame and in inches. "height": [a, b]
+  // slopes the top from the FIRST footprint vertex to the LAST, which is how a diagonal strut is
+  // written. "baseHeight" lifts the bottom off the floor, and the simulator lets a robot shorter
+  // than that drive underneath.
+  //
+  // ---- The HIVE frame, manual 9.6.1 -------------------------------------------------------------
+  //
+  // "The frame is made up of two triangular metal structures that attach to mounting strips under
+  // the TILES which are connected at their apex by a crossbar. The frame is 49.46 in wide, and
+  // 38.95 in deep at its base." Measured: 38.952 deep, which is exact, and 48.577 across the
+  // A-frame legs, which is inside 9.1's +/- 1 in of the stated 49.46.
+  //
+  // THE LEGS ARE STRUTS, NOT WALLS. Each is a 1.20 in square tube 45.75 in long, running from the
+  // apex down and outward. Their bounding boxes are 12 x 19 in, and declaring those as the
+  // footprint would put four invented pillars on the field, each blocking sixteen times what the
+  // real leg blocks. So each one is a quad along its own ground projection, sloping from the
+  // foot up to the apex.
+  //
+  // AND THEY ARE OFF THE FLOOR, which is the part that was missing until 12 Sept 2026. A sloped
+  // "height" alone made each leg a WEDGE, solid from the tiles up to the bar along its whole
+  // length, and the first drive under the finished hive stopped a foot and a half short of the
+  // crossbar. The real leg is a bar: "baseHeight": [a, b] slopes its underside from the foot to
+  // the apex the same way "height" slopes its top, and the 2.6 in between them is a 1.2 in tube
+  // seen at the 62 degrees it leans. The underside passes 18 in -- the tallest legal robot --
+  // about 9 in of floor from the foot, and everything beyond that is open. What a robot still
+  // hits is the foot, the foot bar it stands on, and the FLOWERS; what it drives under is the
+  // crossbar and the upper three quarters of every leg, which is what the photograph of the
+  // real field shows and what a driver expects.
+  "structures": [
+    { "name": "Blue A-frame leg (far)", "colour": "grey", "blocksRobot": true,
+      "footprint": [[96.32, 90.27], [95.3, 90.89], [84.23, 72.82], [85.25, 72.2]],
+      "baseHeight": [0.55, 38.48], "height": [3.15, 41.08] },
+    { "name": "Blue A-frame leg (audience)", "colour": "grey", "blocksRobot": true,
+      "footprint": [[95.3, 53.11], [96.32, 53.73], [85.25, 71.8], [84.23, 71.18]],
+      "baseHeight": [0.55, 38.48], "height": [3.15, 41.08] },
+    { "name": "Red A-frame leg (far)", "colour": "grey", "blocksRobot": true,
+      "footprint": [[48.71, 90.89], [47.69, 90.27], [58.76, 72.2], [59.78, 72.82]],
+      "baseHeight": [0.55, 38.48], "height": [3.15, 41.08] },
+    { "name": "Red A-frame leg (audience)", "colour": "grey", "blocksRobot": true,
+      "footprint": [[47.69, 53.73], [48.71, 53.11], [59.78, 71.18], [58.76, 71.8]],
+      "baseHeight": [0.55, 38.48], "height": [3.15, 41.08] },
+
+    // The foot bars lie ON the tiles between each pair of legs: 39 in long, 2 in wide, 2.15 tall.
+    // Low, and solid -- an FTC robot has a quarter inch of ground clearance and does not climb a
+    // two-inch bar, so this is the part of the HIVE structure a driver actually hits.
+    { "name": "Blue frame foot bar", "colour": "grey", "blocksRobot": true,
+      "footprint": [[94.75, 52.53], [96.75, 52.53], [96.75, 91.47], [94.75, 91.47]],
+      "height": 2.15 },
+    { "name": "Red frame foot bar", "colour": "grey", "blocksRobot": true,
+      "footprint": [[47.25, 52.53], [49.25, 52.53], [49.25, 91.47], [47.25, 91.47]],
+      "height": 2.15 },
+
+    // The crossbar joining the two apexes, 41.95 in up. Drawn, and solid to anything tall enough
+    // to reach it, which nothing legal is -- R105 caps a robot well under that.
+    { "name": "HIVE crossbar", "colour": "grey", "blocksRobot": true,
+      "footprint": [[59.27, 71.4], [84.74, 71.4], [84.74, 72.6], [59.27, 72.6]],
+      "baseHeight": 40.75, "height": 41.95 },
+
+    // ---- The FLOWERS, manual 9.7 ----------------------------------------------------------------
+    //
+    // Four, one on each wall, 180 degrees rotationally symmetric about the field centre. The
+    // opening is 4.016 in across at 21.404 in up (the manual says approximately 4 in at
+    // approximately 21.5), with a backstop 1.250 in above that -- and 1.25 is exactly what 9.7
+    // states, which is the tightest agreement anywhere in this file.
+    //
+    // Drawn as the rings' own 5.95 in square footprint, up to the top of the backstop. Solid: a
+    // FLOWER is bolted to the perimeter wall and a robot cannot drive through it.
+    //
+    // baseHeight 3.55 is the Retrieval Opening (manual 9.7): under it the bottom POLLEN sits in the
+    // 0.4 in lower ring, open on every side but the wall's (measured on a real FLOWER, 14 Sept 2026), so a camera
+    // is not hidden from it by the FLOWER's box. The chassis is still stopped by the footprint.
+    { "name": "Red-wall FLOWER", "colour": "yellow", "blocksRobot": true,
+      "footprint": [[0.98, 45.63], [6.94, 45.63], [6.94, 51.59], [0.98, 51.59]], "baseHeight": 3.55, "height": 22.65 },
+    { "name": "Far-wall FLOWER", "colour": "yellow", "blocksRobot": true,
+      "footprint": [[45.63, 137.06], [51.59, 137.06], [51.59, 143.02], [45.63, 143.02]], "baseHeight": 3.55, "height": 22.65 },
+    { "name": "Audience-wall FLOWER", "colour": "yellow", "blocksRobot": true,
+      "footprint": [[92.41, 0.98], [98.37, 0.98], [98.37, 6.94], [92.41, 6.94]], "baseHeight": 3.55, "height": 22.65 },
+    { "name": "Blue-wall FLOWER", "colour": "yellow", "blocksRobot": true,
+      "footprint": [[137.06, 92.41], [143.02, 92.41], [143.02, 98.37], [137.06, 98.37]], "baseHeight": 3.55, "height": 22.65 }
+  ],
+
+  // ---- Tape --------------------------------------------------------------------------------------
+  //
+  // Sixteen strips, each one a named part in the CAD carrying its own length. Manual 9.3: the tape
+  // is 1 in or 2 in wide gaffer in red and electric blue, and "none of the tape lines span across
+  // TILE seams".
+  //
+  // The eight strips outside the field bound the ALLIANCE AREAS, which are floor space rather than
+  // field, and are drawn because that is where a human player stands to hand NECTAR in (G427).
+  "lines": [
+    { "name": "red alliance area", "colour": "red", "width": 1, "points": [[0.35, 24.09], [-53.15, 24.09]] },
+    { "name": "red alliance area", "colour": "red", "width": 1, "points": [[-53.15, 24.09], [-53.15, 119.91]] },
+    { "name": "red alliance area", "colour": "red", "width": 1, "points": [[-53.15, 119.91], [0.35, 119.91]] },
+
+    { "name": "blue alliance area", "colour": "blue", "width": 1, "points": [[143.65, 24.09], [197.15, 24.09]] },
+    { "name": "blue alliance area", "colour": "blue", "width": 1, "points": [[197.15, 24.09], [197.15, 119.91]] },
+    { "name": "blue alliance area", "colour": "blue", "width": 1, "points": [[197.15, 119.91], [143.65, 119.91]] },
+
+    // The GARDEN is two parallel strips 2 in apart, and the zone is the strip between them.
+    { "name": "red garden", "colour": "red", "width": 1, "points": [[1.9, 2.4], [24.59, 2.4]] },
+    { "name": "red garden", "colour": "red", "width": 1, "points": [[1.9, 3.4], [24.59, 3.4]] },
+    { "name": "blue garden", "colour": "blue", "width": 1, "points": [[119.41, 140.6], [142.1, 140.6]] },
+    { "name": "blue garden", "colour": "blue", "width": 1, "points": [[119.41, 141.6], [142.1, 141.6]] },
+
+    // The LOADING ZONE is three strips; the fourth side is the perimeter wall (9.3).
+    { "name": "red loading zone", "colour": "red", "width": 1, "points": [[1.9, 96.41], [12.4, 96.41]] },
+    { "name": "red loading zone", "colour": "red", "width": 1, "points": [[12.4, 96.41], [12.4, 118.1]] },
+    { "name": "red loading zone", "colour": "red", "width": 1, "points": [[12.4, 118.1], [1.9, 118.1]] },
+
+    { "name": "blue loading zone", "colour": "blue", "width": 1, "points": [[142.1, 25.9], [131.6, 25.9]] },
+    { "name": "blue loading zone", "colour": "blue", "width": 1, "points": [[131.6, 25.9], [131.6, 47.59]] },
+    { "name": "blue loading zone", "colour": "blue", "width": 1, "points": [[131.6, 47.59], [142.1, 47.59]] }
+  ],
+
+  // ---- AprilTags, manual 9.9 ---------------------------------------------------------------------
+  //
+  // Sixteen 3.25 in 36h11 tags, in four clusters of four, one cluster on the UNDERSIDE of each
+  // CELL "facing downward towards the TILES". Nothing in this game is on a wall, which is the
+  // single biggest difference from DECODE for anybody porting a vision pipeline: the camera has
+  // to look UP.
+  //
+  // THE IDS COME FROM FIGURE 9-17 AND NOT FROM SECTION 9.9'S TEXT. The manual's prose extracts as
+  // "AprilTag ID's 0, , , on the red CELL..." -- its embedded font subset has no mapping for
+  // several digits, so they come out as nothing at all rather than as an error. The real IDs are
+  // 30-33 and 34-37 on the red CELLS and 38-41 and 42-45 on the blue. See
+  // tools/manual-figures.js, which exists because of this.
+  //
+  // "pitchDeg" is the tag's tilt. These sit 30 degrees off horizontal, face down -- measured off
+  // the CAD, where the sticker normals come out as exact trig, (0, +/-0.5, -0.866).
+  //
+  // POSITIONS ALONG A CLUSTER ARE EXACT; ACROSS IT THEY ARE NOT. Figure 9-15 dimensions the four
+  // tags at 2.75 and 6.5 in either side of the cluster centre, which the CAD's 17.000 in sticker
+  // corroborates -- four 3.25 in tags with outer centres at 6.5 span 16.25 and fit. But the figure
+  // never locates the tag centreline on the 5.25 in sticker and the artwork is not geometry, so
+  // the height is the sticker's mid-height and is ASSUMED, within about half an inch.
+  //
+  // THESE POSES ARE THE START OF THE MATCH ONLY. Every one of these tags is on a body that tips,
+  // and when a HIVE tips its four tags move to where the other CELL's are now. A field file cannot
+  // say that yet, so a pipeline tested against this file is being told something that stops being
+  // true the first time somebody scores.
+  "aprilTags": [
+    { "id": 30, "family": "36h11", "size": 3.25, "x": 65.76, "y": 83.29, "z": 35.71, "yawDeg": -90, "pitchDeg": -60 },
+    { "id": 31, "family": "36h11", "size": 3.25, "x": 62.01, "y": 83.29, "z": 35.71, "yawDeg": -90, "pitchDeg": -60 },
+    { "id": 32, "family": "36h11", "size": 3.25, "x": 56.51, "y": 83.29, "z": 35.71, "yawDeg": -90, "pitchDeg": -60 },
+    { "id": 33, "family": "36h11", "size": 3.25, "x": 52.76, "y": 83.29, "z": 35.71, "yawDeg": -90, "pitchDeg": -60 },
+
+    { "id": 34, "family": "36h11", "size": 3.25, "x": 52.76, "y": 59.22, "z": 49.61, "yawDeg": -90, "pitchDeg": -60 },
+    { "id": 35, "family": "36h11", "size": 3.25, "x": 56.51, "y": 59.22, "z": 49.61, "yawDeg": -90, "pitchDeg": -60 },
+    { "id": 36, "family": "36h11", "size": 3.25, "x": 62.01, "y": 59.22, "z": 49.61, "yawDeg": -90, "pitchDeg": -60 },
+    { "id": 37, "family": "36h11", "size": 3.25, "x": 65.76, "y": 59.22, "z": 49.61, "yawDeg": -90, "pitchDeg": -60 },
+
+    { "id": 38, "family": "36h11", "size": 3.25, "x": 78.26, "y": 60.71, "z": 35.71, "yawDeg": 90, "pitchDeg": -60 },
+    { "id": 39, "family": "36h11", "size": 3.25, "x": 82.01, "y": 60.71, "z": 35.71, "yawDeg": 90, "pitchDeg": -60 },
+    { "id": 40, "family": "36h11", "size": 3.25, "x": 87.51, "y": 60.71, "z": 35.71, "yawDeg": 90, "pitchDeg": -60 },
+    { "id": 41, "family": "36h11", "size": 3.25, "x": 91.26, "y": 60.71, "z": 35.71, "yawDeg": 90, "pitchDeg": -60 },
+
+    { "id": 42, "family": "36h11", "size": 3.25, "x": 91.26, "y": 84.78, "z": 49.61, "yawDeg": 90, "pitchDeg": -60 },
+    { "id": 43, "family": "36h11", "size": 3.25, "x": 87.51, "y": 84.78, "z": 49.61, "yawDeg": 90, "pitchDeg": -60 },
+    { "id": 44, "family": "36h11", "size": 3.25, "x": 82.01, "y": 84.78, "z": 49.61, "yawDeg": 90, "pitchDeg": -60 },
+    { "id": 45, "family": "36h11", "size": 3.25, "x": 78.26, "y": 84.78, "z": 49.61, "yawDeg": 90, "pitchDeg": -60 }
+  ],
+
+  // ---- Appearance: the official CAD, drawn instead of boxes -------------------------------------
+  //
+  // DECORATION ONLY. The structures above stay the collision and the hives stay the physics; these
+  // meshes are what the field view DRAWS. They are cut from FIRST's field CAD by
+  // tools/cad/field_mesh.py into cad/local/ (git-ignored, because the CAD is not ours to
+  // redistribute), so on a machine without them the page draws the boxes, exactly as before.
+  //
+  //   replaces      the structures a loaded mesh stands in for; the page stops drawing their boxes
+  //   hive          the part rocks with that alliance's HIVE, turned about its pivot by the live angle
+  //   restAngleDeg  the HIVE angle the CAD shows: red's audience CELL up is state 0 (0 deg), blue's
+  //                 far CELL up is state 1 (60 deg), which is how a match starts (10.3.1)
+  "appearance": {
+    "units": "in",
+    "parts": [
+      { "mesh": "../cad/local/field-mesh/biobuzz/flower-ring.stl", "colour": "#E4B21B",
+        "replaces": ["Red-wall FLOWER", "Far-wall FLOWER", "Audience-wall FLOWER", "Blue-wall FLOWER"] },
+      { "mesh": "../cad/local/field-mesh/biobuzz/flower-pipe.stl", "colour": "#E9E8E1" },
+      { "mesh": "../cad/local/field-mesh/biobuzz/flower-black.stl", "colour": "#2A2C30" },
+      { "mesh": "../cad/local/field-mesh/biobuzz/frame.stl", "colour": "#A9AFB6",
+        "replaces": ["Red A-frame leg (far)", "Red A-frame leg (audience)", "Blue A-frame leg (far)",
+                     "Blue A-frame leg (audience)", "Red frame foot bar", "Blue frame foot bar", "HIVE crossbar"] },
+      { "mesh": "../cad/local/field-mesh/biobuzz/red-hive-skin.stl", "colour": "#C8323B", "opacity": 0.72, "hive": "red", "restAngleDeg": 0 },
+      { "mesh": "../cad/local/field-mesh/biobuzz/red-hive-metal.stl", "colour": "#A9AFB6", "hive": "red", "restAngleDeg": 0 },
+      { "mesh": "../cad/local/field-mesh/biobuzz/red-hive-black.stl", "colour": "#2A2C30", "hive": "red", "restAngleDeg": 0 },
+      { "mesh": "../cad/local/field-mesh/biobuzz/blue-hive-skin.stl", "colour": "#2F6AD1", "opacity": 0.72, "hive": "blue", "restAngleDeg": 60 },
+      { "mesh": "../cad/local/field-mesh/biobuzz/blue-hive-metal.stl", "colour": "#A9AFB6", "hive": "blue", "restAngleDeg": 60 },
+      { "mesh": "../cad/local/field-mesh/biobuzz/blue-hive-black.stl", "colour": "#2A2C30", "hive": "blue", "restAngleDeg": 60 }
+    ]
+  }
+}

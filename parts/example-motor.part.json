@@ -1,0 +1,10 @@
+{
+  "id": "example-measured-motor",
+  "group": "Motors",
+  "name": "Our drive motor (example)",
+  "blurb": "An example part file. Copy it, measure yours, delete this one.",
+  "confidence": "yours",
+  "source": "NOT MEASURED. This file exists to show the format and to give the checks something to read. Put a motor on a kitchen scale and a caliper across it, put the real numbers here, and change confidence to \"measured\" -- then the mass and balance figures in the garage start describing your robot instead of a rectangle.",
+  "envelope": { "shape": "cylinder", "diameterIn": 1.46, "lengthIn": 3.94 },
+  "device": { "type": "DcMotorEx", "motor": "YJ_312", "hub": "Control Hub" }
+}

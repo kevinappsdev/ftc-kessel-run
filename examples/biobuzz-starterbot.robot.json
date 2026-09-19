@@ -1,0 +1,272 @@
+{
+  // The goBILDA StarterBot with Mecanum Wheels, kit 3200-2627-0004, for BIOBUZZ.
+  //
+  // Thousands of teams will build this one. It is here so that a team who has it -- or who is
+  // waiting for it to arrive -- can drive the thing, run goBILDA's own OpMode against it, and see
+  // what it does on a BIOBUZZ field before the box is open.
+  //
+  // WHERE THE NUMBERS COME FROM. Almost all of them are MEASURED, off goBILDA's own CAD for this
+  // kit (3200-2627-0004.step, 419 MB) read by tools/step-assembly.js -- the same tool that
+  // measured the field in Sprint 46. Nothing here was scaled off a photograph. Each number is
+  // labelled the way examples/decode-advanced-bot.robot.json labels its own:
+  //
+  //   MEASURED  read off the kit's CAD or stated in the assembly guide's own bill of materials
+  //   DERIVED   follows from something measured, by arithmetic
+  //   ASSUMED   a placeholder. Wrong until somebody with the robot and a scale says otherwise
+  //
+  // Only three numbers below are ASSUMED, and all three are masses. The CAD carries no materials,
+  // so nothing in it weighs anything.
+  //
+  // ---- A NOTE ON THE LAUNCHER, BECAUSE THE BILL OF MATERIALS LOOKS WRONG AND IS NOT ----------
+  //
+  // The kit ships FIVE 19.2:1 Yellow Jacket motors (5203-2402-0019) and goBILDA's sample OpMode
+  // runs the launcher at 1250 ticks/s, commented "//2678 RPM". Those two do not agree: 2678 RPM
+  // at 1250 ticks/s implies 28 ticks per revolution, and a 19.2:1 Yellow Jacket reports 537.7.
+  // Read off the BOM alone, that comment is wrong by a factor of nineteen.
+  //
+  // It is not wrong. ASSEMBLY STEP 38 CONVERTS ONE OF THE FIVE MOTORS TO 1:1, with the
+  // 5105-0208-0019 Conversion Coupler -- the gearbox comes out and what is left is a bare 6000
+  // RPM motor at 28 ticks/rev. goBILDA's arithmetic is exact and the BOM is simply not the whole
+  // story. Modelled here as what it becomes.
+  //
+  // The gear pair in the BOM (2302-0014-0100, 100T, and 2303-4008-0020, 20T) belongs to the
+  // INTAKE, not the launcher, which the CAD settles: the 100T sits on the 50.9:1 motor's own
+  // axis and the 20T beside it, so the roller is geared UP 5:1 to about 585 rpm. The launcher's
+  // Hogback wheel and its motor share a y and a z to three decimal places, which is direct drive.
+
+  "name": "goBILDA StarterBot (BIOBUZZ, mecanum)",
+
+  // BIOBUZZ preloads four POLLEN (10.3.1 A.iv), and G407 caps CONTROL at four. The field file
+  // enforces both; this is the robot asking for what the game allows.
+  "preloadedArtifacts": 4,
+  "magazineCapacity": 4,
+
+  "chassis": {
+    "type": "mecanum",
+
+    // MEASURED, both, off the kit CAD: the four mecanum wheels sit at x = +/-8.15 in and
+    // y = -5.669 and +4.724 in. Track is across, wheelbase is along.
+    //
+    // THE WHEELBASE IS NOT CENTRED on the robot's own origin, and that is the kit and not an
+    // error -- the drivetrain sits back to leave room for the intake at the front.
+    "trackM": 0.4143,
+    "wheelbaseM": 0.2639,
+
+    // MEASURED from the part number: 3625-0100-0104 and 3625-0001-0104 are goBILDA's 104 mm
+    // mecanum wheels, so the radius is 52 mm.
+    "wheelRadiusM": 0.052,
+
+    // ASSUMED, and the first thing to fix. The CAD has no materials, so nothing in it has a
+    // mass. 11 kg is a channel-and-gridplate robot of this size with a 12 V battery in it.
+    // Mass sets how hard it is to push and how long it takes to stop; put the finished robot on
+    // a bathroom scale and replace this.
+    "massKg": 11.0,
+
+    // DERIVED. The wheels are 16.31 in apart across their centres and a 104 mm mecanum is about
+    // 1.5 in wide, so the robot is around 17.8 in across -- inside R105's 18 in, which it has to
+    // be. Half of that.
+    "robotHalfExtentM": 0.226
+  },
+
+  // ---- The devices, and their NAMES ---------------------------------------------------------
+  //
+  // EVERY NAME BELOW IS COPIED CHARACTER FOR CHARACTER OUT OF goBILDA'S OWN OPMODE. That is the
+  // whole point of this file: BioBuzzStarterbotTeleopMecanum.java asks the hardwareMap for
+  // "left_front_drive", "windmillServo" and the rest, and if this file spelled any of them
+  // differently the simulator would invent the device on demand and the robot would half work.
+  // ./tools/test.sh reports "0 devices invented" for exactly this reason.
+  //
+  // The "reversed" flags are their setDirection calls, not guesses: the sample REVERSEs both
+  // left drive motors, the right intake servo, and the windmill.
+  "devices": [
+    { "name": "left_front_drive",  "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.frontLeft",  "reversed": true,  "hub": "Control Hub", "port": 0 },
+    { "name": "left_back_drive",   "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.backLeft",   "reversed": true,  "hub": "Control Hub", "port": 1 },
+    { "name": "right_back_drive",  "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.backRight",  "reversed": false, "hub": "Control Hub", "port": 2 },
+    { "name": "right_front_drive", "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.frontRight", "reversed": false, "hub": "Control Hub", "port": 3 },
+
+    // The fifth 19.2:1, converted to 1:1 at assembly step 38. See the note at the top.
+    { "name": "launcher", "type": "DcMotorEx", "motor": "YJ_6000", "hub": "Expansion Hub", "port": 0 },
+
+    // MEASURED: 5203-2402-0051 is the 50.9:1, 117 rpm Yellow Jacket. It drives the roller
+    // through the 100T/20T pair, which steps it UP 5:1.
+    { "name": "intake", "type": "DcMotorEx", "motor": "YJ_117", "hub": "Expansion Hub", "port": 1 },
+
+    // Three 2000-series servos: two "Servo 1 & 2 (Speed)" (2000-0025-0003) in the front corners
+    // pulling elements out of corners, and one "Windmill (Torque)" (2000-0025-0002) feeding the
+    // launcher. All three are run as continuous rotation by the sample.
+    { "name": "left_intake_servo",  "type": "CRServo", "hub": "Control Hub", "port": 0 },
+    { "name": "right_intake_servo", "type": "CRServo", "reversed": true, "hub": "Control Hub", "port": 1 },
+    { "name": "windmillServo",      "type": "CRServo", "reversed": true, "hub": "Control Hub", "port": 2 },
+
+    // The Control Hub's own IMU. goBILDA's TeleOp does not use it -- a driver has eyes -- but an
+    // AUTONOMOUS does: examples/starterbot-teamcode turns by reading the heading rather than by
+    // running a motor for a measured number of milliseconds, because a timed turn is a different
+    // angle on a fresh battery than on a flat one.
+    //
+    // Declared rather than left to be invented on demand, so the project sweep keeps reporting
+    // "0 devices invented" -- which is the check that says the robot file and the code agree.
+    { "name": "imu", "type": "IMU", "logoDirection": "UP", "usbDirection": "FORWARD" }
+  ],
+
+  "mechanisms": [
+    // ---- The launcher ------------------------------------------------------------------------
+    //
+    // MEASURED: a Hogback Wheel, 3626-0014-0096, so 96 mm -- and the CAD's own largest circle in
+    // that part has a 1.890 in radius, which is 48.0 mm, agreeing exactly.
+    //
+    // motorToWheelRatio 1.0 is MEASURED and not assumed. In the kit CAD the Hogback wheel sits at
+    // (-0.197, 1.575, 4.724) in and the launcher motor at (0.94, 1.57, 4.72): the same axis to
+    // three decimals, with a Hyper Hub between them and no gear. Direct drive.
+    //
+    // wheelMassKg is ASSUMED. A 96 mm moulded wheel with a compliant tread is around 100 g, and
+    // this number sets the spin-up time directly -- which is what goBILDA's own launch() function
+    // is built around, since it will not feed until getVelocity() passes 1200. A kitchen scale
+    // settles it. "ring" rather than "disc" because the tread carries the mass at the rim.
+    {
+      "name": "launcherFlywheel", "type": "flywheel", "motor": "launcher",
+      "wheelDiameterM": 0.096, "wheelMassKg": 0.10,
+      "motorToWheelRatio": 1.0, "inertiaShape": "ring",
+
+      // WHERE THE SHOT LEAVES, in the robot frame: +x along the nose, +y to the LEFT, +z up.
+      //
+      // MEASURED, by mapping the kit CAD's own frame onto this one. In the CAD the intake
+      // rollers run across y = -5.04, so CAD -y is the front; that makes this frame's +x equal
+      // CAD -y, its +y equal CAD +x, and its +z equal CAD +z. The Hogback wheel sits at CAD
+      // (-0.197, 1.575, 4.724) in, and the floor is one 52 mm wheel radius below CAD z = 0.
+      //
+      //     x = -1.575 in aft      y = -0.197 in right of centre      z = 6.77 in up
+      //
+      // THE EXIT DIRECTION IS THE ONE THING HERE THAT IS ASSUMED, and it is worth an evening
+      // with the real kit, because getting it backwards aims every autonomous 180 degrees wrong.
+      // What is known: the Hyper Hub carrying the wheel has its axis along CAD x, so the wheel
+      // throws in the fore-aft plane, and the windmill servo sits 7.6 in ABOVE it and slightly
+      // forward, so a ball is pushed down onto the wheel from the front-top. What tips it
+      // forward is the pair of 5-Hole Low U-Channels at CAD y = -3.15, level with the wheel and
+      // in front of it -- a chute on the exit side. So: over the nose.
+      //
+      // fixedAngleDeg is the LEAST certain number in this file and the most consequential, so
+      // here is exactly what is known and what is not.
+      //
+      // NOT MEASURED. This kit has no hood servo -- the launcher fires at whatever angle its
+      // chute is built at -- and the chute's angle is not something the parts' positions in the
+      // CAD give up. A protractor against the real chute settles it in one minute, and it is the
+      // single most valuable number for anybody holding the kit to send back.
+      //
+      // WHAT THE SIMULATOR SAYS, which is a genuine constraint rather than a guess. The upward
+      // CELL is a box whose MOUTH -- 20 wide by 14 tall -- faces outward along the hive's bar,
+      // 30 degrees above horizontal, with its centre 59.1 in above the tiles and its lower lip
+      // at 53.1 (measured off the CAD; see Hive.java for why it is the high end and not the
+      // low one, which is what this file believed until 12 Sept 2026). This launcher is a fixed
+      // wheel 6.8 in up running at goBILDA's own 1250 ticks/s. Sweeping the angle, the apex of
+      // the shot comes out
+      //
+      //     40 deg -> 42.3 in      50 deg -> 56.4 in      57 deg -> 65.6 in
+      //     45 deg -> 49.4 in      48 deg -> just over the 53.1 in lip
+      //
+      // so ANYTHING UNDER ABOUT 48 DEGREES CANNOT REACH A CELL AT ALL, from anywhere on the
+      // field, because the whole arc stays below the lip. 40 -- what this file carried while
+      // the mouth was believed to be 40.67 in up -- is one of those.
+      //
+      // WHERE IT SCORES FROM. The mouth faces the far wall, so the only ground a shot can come
+      // from is the far half, and the far wall is 56 in from the mouth: with a 9 in half-robot
+      // the furthest straight-on shot is 47 in and the far corner is 69 in away. Firing four
+      // POLLEN at the blue upward CELL from a grid of poses in that quadrant, aimed at the mouth:
+      //
+      //     54 deg   scores from 55 in out to the corner
+      //     55 deg   scores from 51 in out to the corner
+      //     57 deg   scores from 48 in out to the corner -- every pose tried past 48
+      //     58 deg   scores from 48 to 56 solidly, then patchy
+      //     60 deg   scores from 42 to 47 only
+      //
+      // The corner is the limit of the field, not of the shot. The shape is the same one DECODE
+      // taught: a ball whose apex sits just over the lip crosses the mouth nearly level and is
+      // at scoring height for a long stretch of ground, while a steep shot falls through that
+      // height fast and is only right for a few inches -- and here the mouth is itself tilted
+      // 30 degrees off vertical, so a shot coming down steeply meets it edge-on.
+      //
+      // 57 IS DECLARED, and the deciding argument is the start pose. Blue Far starts 59 in from
+      // the mouth and its autonomous fires from 55 in, which 57 covers with 7 in to spare on the
+      // near side and the whole far corner on the other. At 55 the same pose is 4 in inside the
+      // window; at 58 the far corner drops out.
+      //
+      //     Blue Far start   -> blue CELL      59 in       inside 57's window
+      //     Blue Audience    -> blue CELL      facing the BACK of the cell; has to drive round
+      //
+      // STILL A PLACEHOLDER, and it is reported rather than hidden: if a protractor against the
+      // real chute reads under 48 this robot cannot score in the HIVE at all, and the ranges in
+      // the table move with every degree. The table is the useful part of this comment.
+      "fixedAngleDeg": 57,
+      "mount": { "xM": -0.040, "yM": -0.005, "zM": 0.172, "yawDeg": 0, "pitchDeg": 0 }
+    },
+
+    // ---- The intake ---------------------------------------------------------------------------
+    //
+    // MEASURED: sixteen 3618-4008-0016 rollers on one axle running across the front at y = -5.04
+    // in, spanning x = -4.41 to +5.04. So the mouth is 9.45 in wide and sits 5.04 in forward of
+    // the robot's origin, 0.31 in below the wheel centres.
+    //
+    // maxPieceDiameterM is DERIVED and is the number that decides what this robot can play with.
+    // The intake feeds a hopper sized around POLLEN; a 3.622 in NECTAR is not going through a
+    // roller intake built for 2.835 in balls. Set to 3.0 in -- above POLLEN, below NECTAR -- which
+    // makes this an explicitly POLLEN-only robot, and that matches what goBILDA's own OpMode can
+    // do: it has an intake and a launcher and nothing that places a NECTAR into a FLOWER.
+    //
+    // If the real kit turns out to swallow NECTAR too, raise this and the robot gains a whole
+    // second half of the game. Worth checking with the physical kit on day one.
+    {
+      "name": "frontIntake", "type": "intake", "motor": "intake",
+      "mouthWidthM": 0.24,
+      "maxPieceDiameterM": 0.0762,
+      "mount": { "xM": 0.128, "yM": 0, "zM": -0.008, "pitchDeg": 0 }
+    },
+
+    // ---- The feeder ---------------------------------------------------------------------------
+    //
+    // The windmill is what pushes a POLLEN into the spinning launcher wheel, and in the sample it
+    // is the ONLY signal that a shot is wanted -- launch() turns it on when the right bumper is
+    // held AND the flywheel is above 1200 ticks/s. There is no "did it fire" sensor on the real
+    // robot either.
+    //
+    // artifactsPerSecond is ASSUMED at 4. A windmill on a torque servo is not fast; this is the
+    // rate at which a held bumper empties the hopper, and it is worth timing on the real kit.
+    {
+      "name": "windmillFeeder", "type": "feeder", "motor": "windmillServo",
+      "feedsMechanism": "launcherFlywheel", "artifactsPerSecond": 4.0
+    }
+  ],
+
+  // ---- Where a match starts ------------------------------------------------------------------
+  //
+  // G304: a ROBOT must start "fully contained on its own ALLIANCE's side of the FIELD", "touching
+  // the FIELD perimeter wall", not in the LOADING ZONE and not touching a FLOWER.
+  //
+  // These four are legal starts against the audience wall and the far wall, one pair per
+  // alliance, each clear of the FLOWER that sits on its wall. tools/autos.sh starts a routine
+  // from the pose whose name appears in the routine's own name.
+  //
+  // 9 in off the wall is the robot's own half-extent, so it starts touching it.
+  "startPoses": [
+    { "name": "Red Audience",  "xM": 0.6096, "yM": 0.2286, "headingDeg": 90 },
+    { "name": "Red Far",       "xM": 0.6096, "yM": 3.4290, "headingDeg": -90 },
+    { "name": "Blue Audience", "xM": 3.0480, "yM": 0.2286, "headingDeg": 90 },
+    { "name": "Blue Far",      "xM": 3.0480, "yM": 3.4290, "headingDeg": -90 }
+  ],
+
+  // ---- What it looks like: goBILDA's kit CAD -----------------------------------------------------
+  //
+  // Cut by tools/cad/starterbot_mesh.py from 3200-2627-0004.step into cad/local/ (git-ignored: the
+  // CAD is goBILDA's), so a machine without it draws the stock box. Decoration only.
+  //
+  // The meshes are in the kit CAD's own frame, millimetres. As the launcher comment above measured,
+  // this robot's +x is CAD -y and its +y is CAD +x, which is a 90 degree turn; the floor is one
+  // 52 mm wheel radius below CAD z = 0. The wheels are left out, because the field view draws its
+  // own spinning ones at the declared track and wheelbase.
+  "appearance": {
+    "mesh": "../cad/local/robot-mesh/biobuzz-starterbot/metal.stl", "units": "mm", "align": "origin",
+    "yawDeg": 90, "offset": { "zM": 0.052 }, "colour": "#B4BAC1",
+    "parts": [
+      { "mesh": "../cad/local/robot-mesh/biobuzz-starterbot/motors.stl", "colour": "#E9B40A" },
+      { "mesh": "../cad/local/robot-mesh/biobuzz-starterbot/black.stl",  "colour": "#2A2C30" }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+# This repository is a BUILT DISTRIBUTION, not source. Every file in it should come back out
+# byte for byte identical to what went in, so nothing here gets its line endings rewritten.
+#
+# WHY IT MATTERS, with two examples that actually break:
+#
+#   jre/lib/jvm.cfg and jre/lib/tzmappings are read by the JVM itself at startup. They are
+#   shipped with LF, and a checkout that helpfully turned them into CRLF would be handing the
+#   runtime a config file in a shape it was never given.
+#
+#   FTCKesselRun.sh and FTCKesselRun.command are run by bash on macOS and Linux. A shell script
+#   with CRLF fails with "bad interpreter: no such file or directory", which is the least
+#   informative error in computing and has nothing to do with the interpreter.
+#
+# Git's default on Windows (core.autocrlf=true) does exactly that conversion, and it is right to
+# for source. It is wrong for a folder that is meant to be a copy of a build.
+* -text

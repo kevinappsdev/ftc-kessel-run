@@ -1,0 +1,60 @@
+{
+  // The robot FIRST's own VISION samples ask for.
+  //
+  // WHY IT IS A SEPARATE FILE from first-samples.robot.json. That one declares the sensors the
+  // sensor samples want and is annotated line by line with where each number came from; this
+  // one is about a camera, and a camera is the one device whose declaration changes what the
+  // OpMode can SEE rather than just whether it loads. Keeping them apart means a change to the
+  // camera cannot quietly move a sensor sample's result.
+  //
+  // WHAT THE SAMPLES NEED, exactly:
+  //
+  //   ConceptAprilTag                hardwareMap.get(WebcamName.class, "Webcam 1")
+  //   RobotAutoDriveToAprilTagOmni   the same, plus four drive motors named
+  //                                  front_left_drive, back_left_drive, front_right_drive
+  //                                  and back_right_drive
+  //
+  // The motor names are FIRST's, not this project's. A sample is only an acceptance test if it
+  // is run unmodified, so the ROBOT bends to the sample rather than the other way round.
+
+  "name": "FIRST vision samples",
+
+  "chassis": {
+    "type": "mecanum",
+    // A plausible competition base. Nothing here is measured off a real robot, because there
+    // is no real robot -- what is being tested is that FIRST's code runs, not that it runs on
+    // anybody's particular chassis.
+    "massKg": 13.6,
+    "trackM": 0.36,
+    "wheelbaseM": 0.32,
+    "wheelRadiusM": 0.048,
+    "robotHalfExtentM": 0.229
+  },
+
+  "devices": [
+    { "name": "front_left_drive",  "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.frontLeft",  "reversed": true, "hub": "Control Hub", "port": 0 },
+    { "name": "back_left_drive",   "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.backLeft",   "reversed": true, "hub": "Control Hub", "port": 1 },
+    { "name": "back_right_drive",  "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.backRight",  "hub": "Control Hub", "port": 2 },
+    { "name": "front_right_drive", "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.frontRight", "hub": "Control Hub", "port": 3 },
+
+    // The camera. "Webcam 1" is the name FIRST use in every vision sample and the name the RC
+    // app's configuration wizard suggests, so it is the name a team will have.
+    //
+    // C270 because it is the cheapest camera the SDK ships a calibration for, which makes it
+    // the one a rookie team owns, and because Logitech publish its field of view (55 degrees
+    // on the diagonal) so this file can cite a number rather than invent one. 640x480 at 30
+    // fps is the resolution FIRST's own samples suggest in their comments.
+    //
+    // The MOUNT is this project's own and is ASSUMED: 8 in forward of centre, 9 in up, looking
+    // straight ahead and level. It is where a camera goes on a robot that is looking for tags
+    // on a wall, and it is declared here rather than left out because a camera with no mount
+    // looks along the nose from the floor.
+    { "name": "Webcam 1", "type": "Webcam", "model": "C270",
+      "widthPx": 640, "heightPx": 480, "fps": 30,
+      "mount": { "xM": 0.2032, "yM": 0, "zM": 0.2286, "yawDeg": 0, "pitchDeg": 0 } }
+  ]
+}

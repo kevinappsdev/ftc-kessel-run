@@ -1,0 +1,73 @@
+{
+  // A robot that carries exactly what FIRST's own sensor samples ask for, by name.
+  //
+  // WHY THIS FILE EXISTS
+  // --------------------
+  // ./tools/test.sh sweeps FIRST's unmodified sample OpModes and reports how many devices had
+  // to be INVENTED to get them running. Invented devices are the measure that matters: a
+  // simulator can always make a sample "work" by conjuring whatever it asks for, and then it
+  // has proved nothing about whether a real team's declared robot would run the same code.
+  //
+  // So every device below is named the way FIRST's samples name it -- "imu",
+  // "sensor_distance", "sensor_color", "digitalTouch", "left_drive", "right_drive" -- and the
+  // sweep asserts zero inventions against it.
+  //
+  // WHAT IS MEASURED, DERIVED AND ASSUMED
+  // -------------------------------------
+  // Nothing here is measured off a real robot, because there is no real robot: this is a
+  // fixture, not a team's machine. The chassis is the same 18 in stand-in base the simulator
+  // has always used, and the sensor mounts are ASSUMED placements chosen to be the places
+  // these sensors actually go -- a rangefinder on the nose, a colour sensor looking down from
+  // just above the tiles, a bumper switch on the front face. They are declared so that the
+  // sweep exercises real geometry rather than an unmounted stand-in.
+  //
+  // THE MOTOR NAMES. FIRST's two-motor samples call the drive motors "left_drive" and
+  // "right_drive". This is a four-corner mecanum base, because that is the only drivetrain
+  // the simulator models today, with the front pair carrying those names. A genuine two-motor
+  // tank base arrives with the drivetrain abstraction; until then this is the honest way to
+  // let a two-motor sample drive something.
+
+  "name": "FIRST sample fixture",
+
+  "chassis": {
+    "type": "mecanum",
+    "massKg": 15.0,
+    "trackM": 0.36,
+    "wheelbaseM": 0.32,
+    "wheelRadiusM": 0.048,
+    "robotHalfExtentM": 0.229
+  },
+
+  "devices": [
+    { "name": "left_drive",       "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.frontLeft",  "reversed": true },
+    { "name": "right_drive",      "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.frontRight" },
+    { "name": "left_back_drive",  "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.backLeft",   "reversed": true },
+    { "name": "right_back_drive", "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.backRight" },
+
+    // The Control Hub's own IMU. ASSUMED flat with the logo up and the USB port forward,
+    // which is the SDK's own default and what SensorIMUOrthogonal declares.
+    { "name": "imu", "type": "IMU", "logoDirection": "UP", "usbDirection": "FORWARD" },
+
+    // ASSUMED: on the front face, 20 cm up, looking along the nose.
+    { "name": "sensor_distance", "type": "Rev2mDistanceSensor",
+      "mount": { "xM": 0.229, "yM": 0.0, "zM": 0.20 } },
+
+    // ASSUMED: 15 cm ahead of centre, 3 cm above the tiles, looking straight down. That is
+    // about where a line-following sensor goes, and the height matters -- the alpha channel
+    // FIRST's line follower thresholds on falls off with it.
+    { "name": "sensor_color", "type": "RevColorSensorV3",
+      "mount": { "xM": 0.15, "yM": 0.0, "zM": 0.03, "pitchDeg": -90 } },
+
+    // ASSUMED: a bumper switch on the nose at 5 cm.
+    { "name": "digitalTouch", "type": "TouchSensor",
+      "mount": { "xM": 0.229, "yM": 0.0, "zM": 0.05 } }
+  ],
+
+  "startPoses": [
+    { "name": "Centre", "xM": 1.83, "yM": 0.60, "headingDeg": 90 }
+  ]
+}

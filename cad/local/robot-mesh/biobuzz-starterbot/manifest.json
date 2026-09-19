@@ -1,0 +1,51 @@
+{
+ "generated": "by tools/cad/starterbot_mesh.py from 3200-2627-0004.step; do not edit",
+ "units": "mm, kit CAD frame (-y is the nose, +x left, +z up; floor at z = -52)",
+ "parts": [
+  {
+   "file": "black.stl",
+   "solids": 36,
+   "triangles": 324974,
+   "tolerance": 4.0,
+   "colour": "#2A2C30",
+   "box": [
+    -192.7,
+    -260.8,
+    -26.2,
+    192.7,
+    89.5,
+    169.9
+   ]
+  },
+  {
+   "file": "metal.stl",
+   "solids": 99,
+   "triangles": 830967,
+   "tolerance": 4.0,
+   "colour": "#B4BAC1",
+   "box": [
+    -203.4,
+    -245.6,
+    -27.8,
+    203.7,
+    193.8,
+    257.4
+   ]
+  },
+  {
+   "file": "motors.stl",
+   "solids": 60,
+   "triangles": 215454,
+   "tolerance": 4.0,
+   "colour": "#E9B40A",
+   "box": [
+    -175.5,
+    -199.6,
+    -19.6,
+    175.5,
+    139.6,
+    149.1
+   ]
+  }
+ ]
+}

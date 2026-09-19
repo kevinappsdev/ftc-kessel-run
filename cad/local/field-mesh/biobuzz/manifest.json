@@ -1,0 +1,156 @@
+{
+ "generated": "by tools/cad/field_mesh.py from BIOBUZZ_Full Field.20260912.step; do not edit",
+ "units": "inches, field frame (x toward blue, y away from the audience, z up)",
+ "parts": [
+  {
+   "file": "blue-hive-black.stl",
+   "solids": 4,
+   "triangles": 17548,
+   "tolerance": 0.1,
+   "colour": "#2A2C30",
+   "box": [
+    84.17,
+    68.72,
+    40.24,
+    85.35,
+    76.51,
+    45.52
+   ]
+  },
+  {
+   "file": "blue-hive-metal.stl",
+   "solids": 30,
+   "triangles": 58094,
+   "tolerance": 1.0,
+   "colour": "#A9AFB6",
+   "box": [
+    74.26,
+    46.87,
+    30.65,
+    95.26,
+    92.06,
+    66.02
+   ]
+  },
+  {
+   "file": "blue-hive-skin.stl",
+   "solids": 6,
+   "triangles": 13760,
+   "tolerance": 0.02,
+   "colour": "#2F6AD1",
+   "box": [
+    74.29,
+    47.12,
+    31.96,
+    95.23,
+    91.27,
+    65.65
+   ]
+  },
+  {
+   "file": "flower-black.stl",
+   "solids": 24,
+   "triangles": 19512,
+   "tolerance": 0.25,
+   "colour": "#2A2C30",
+   "box": [
+    0.21,
+    0.21,
+    -0.65,
+    143.79,
+    143.79,
+    22.78
+   ]
+  },
+  {
+   "file": "flower-pipe.stl",
+   "solids": 16,
+   "triangles": 4096,
+   "tolerance": 0.02,
+   "colour": "#E9E8E1",
+   "box": [
+    1.71,
+    1.71,
+    4.25,
+    142.29,
+    142.29,
+    21.25
+   ]
+  },
+  {
+   "file": "flower-ring.stl",
+   "solids": 16,
+   "triangles": 118612,
+   "tolerance": 1.0,
+   "colour": "#E4B21B",
+   "box": [
+    1.36,
+    1.36,
+    -0.2,
+    142.64,
+    142.64,
+    22.65
+   ]
+  },
+  {
+   "file": "frame.stl",
+   "solids": 41,
+   "triangles": 41560,
+   "tolerance": 1.0,
+   "colour": "#A9AFB6",
+   "box": [
+    47.26,
+    52.52,
+    -0.0,
+    96.75,
+    91.48,
+    44.31
+   ]
+  },
+  {
+   "file": "red-hive-black.stl",
+   "solids": 4,
+   "triangles": 17548,
+   "tolerance": 0.1,
+   "colour": "#2A2C30",
+   "box": [
+    58.67,
+    67.49,
+    40.24,
+    59.85,
+    75.28,
+    45.52
+   ]
+  },
+  {
+   "file": "red-hive-metal.stl",
+   "solids": 30,
+   "triangles": 58092,
+   "tolerance": 1.0,
+   "colour": "#A9AFB6",
+   "box": [
+    48.76,
+    51.94,
+    30.65,
+    69.76,
+    97.13,
+    66.02
+   ]
+  },
+  {
+   "file": "red-hive-skin.stl",
+   "solids": 6,
+   "triangles": 13760,
+   "tolerance": 0.02,
+   "colour": "#C8323B",
+   "box": [
+    48.79,
+    52.73,
+    31.96,
+    69.73,
+    96.88,
+    65.65
+   ]
+  }
+ ]
+}

@@ -1,0 +1,222 @@
+{
+  // A COMPLETE DECODE ROBOT, as the worked example of a finished definition.
+  //
+  // WHAT IT IS FOR. The other shipped robots each make one point -- a rookie's two-motor tank,
+  // the sensors FIRST's samples name, a camera. This one is a whole competition machine:
+  // mecanum drive, odometry pods, a Limelight, an intake, an indexer, a flywheel with a hood
+  // that aims it, and a shot table that turns a distance into a wheel speed and a hood angle.
+  // It is what a robot.json looks like when a season's worth of tuning has gone into it, and it
+  // is the file to read when you want to see how the parts fit together.
+  //
+  // It was started from a real hardware configuration with tools/import-config.sh and filled in
+  // from there. Copy it, change the names to yours, and delete what you do not have.
+  //
+  // EVERY NUMBER BELOW IS LABELLED, and that habit is worth more than any of the numbers.
+  // There are four kinds:
+  //
+  //   MEASURED  somebody put a tape or a scale on it, or it is stated in a hardware config
+  //   DERIVED   follows from something measured, by arithmetic or elimination
+  //   OBSERVED  read off a photograph rather than measured
+  //   ASSUMED   a placeholder. Wrong until somebody with the robot and a tape says otherwise
+  //
+  // The ASSUMED ones are the ones to fix first, and they are called out individually. A
+  // simulator will happily report six decimal places about a number somebody guessed; the
+  // labels are how you tell which of its answers you have earned.
+
+  "name": "DECODE advanced bot",
+
+  // DECODE allows a preload, and the shooting sequence this robot was built around fires three
+  // and then powers down, so three is what it expects to have.
+  "preloadedArtifacts": 3,
+
+  "chassis": {
+    "type": "mecanum",
+
+    // MEASURED. The drive tuning this robot runs declares 13.608 kilograms.
+    "massKg": 13.608,
+
+    // ASSUMED. Track and wheelbase are the two numbers with the biggest effect on turn
+    // rate and nobody has measured them. 0.36 / 0.32 is a typical 18-inch base.
+    "trackM": 0.36,
+    "wheelbaseM": 0.32,
+
+    // OBSERVED. goBILDA mecanum wheels, yellow rollers, in a photograph rather than in hand.
+    // goBILDA's mecanum is 96 mm, so the radius is 48 mm.
+    "wheelRadiusM": 0.048,
+
+    // DERIVED, and worth the explanation. The start poses put the robot's centre 8 inches
+    // from the wall (BFA_START_POSE y = 8). A robot cannot start with its centre closer to
+    // the wall than its own half-extent, so the half-extent is at most 8 inches = 0.2032 m,
+    // which also means this robot is nearer 16 inches than the legal 18. That matches how
+    // it looks in the photo. Measure it and replace this.
+    "robotHalfExtentM": 0.2032
+  },
+
+  "devices": [
+    // Names, types, ports and hubs are MEASURED in the sense that matters: they come from
+    // the hardware configuration, so they match what the code asks for, character for
+    // character.
+    //
+    // The drive gearboxes are ASSUMED to be YJ_312. That is the usual choice and it makes
+    // the simulated free speed 1.55 m/s against the 1.598 m/s the robot's own tuned drive
+    // constants report -- 2.9% out, which is good evidence the assumption is right.
+    { "name": "leftFront", "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.frontLeft", "reversed": true, "hub": "Control Hub", "port": 0 },
+    { "name": "leftRear", "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.backLeft", "reversed": true, "hub": "Control Hub", "port": 1 },
+    { "name": "rightRear", "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.backRight", "reversed": false, "hub": "Control Hub", "port": 2 },
+    { "name": "rightFront", "type": "DcMotorEx", "motor": "YJ_312", "role": "drive.frontRight", "reversed": false, "hub": "Control Hub", "port": 3 },
+
+    // The drive constants set leftFront and leftRear REVERSE and the right pair FORWARD,
+    // which is what "reversed" above records: the left motors are bolted in mirrored, and
+    // the code compensates. Change either one alone and the robot spins instead of driving.
+
+    { "name": "hood", "type": "Servo" },
+
+    // DERIVED: the shooter is a bare 6000 RPM motor, not a geared one. The shooting state machine's
+    // shooterTargetVelocity is 1000 ticks/s and its distance table runs to 1450. At 28
+    // ticks/rev that is 2143-3107 RPM, a sensible flywheel. At YJ_312's 537.7 ticks/rev it
+    // would be 112-162 RPM, which would not shoot anything. Elimination, but not a close call.
+    { "name": "shooter", "type": "DcMotorEx", "motor": "YJ_6000", "hub": "Expansion Hub 2", "port": 0 },
+
+    // ASSUMED gearboxes. Nothing in the code pins these down.
+    { "name": "intake", "type": "DcMotorEx", "motor": "YJ_312", "hub": "Expansion Hub 2", "port": 1 },
+    { "name": "indexer", "type": "DcMotorEx", "motor": "YJ_312", "hub": "Expansion Hub 2", "port": 2 },
+    { "name": "kickstand", "type": "DcMotorEx", "motor": "YJ_312", "hub": "Expansion Hub 2", "port": 3 },
+
+    // MEASURED. Straight out of the drive tuning: forwardPodY = 1.417 in
+    // and strafePodX = -5.67 in, converted to metres. Taking them from the code the robot
+    // already tuned beats asking them to measure the same distance twice.
+    { "name": "pinpoint", "type": "GoBildaPinpointDriver", "forwardPodOffsetM": 0.036, "strafePodOffsetM": -0.144 },
+
+    // ASSUMED, all six numbers. A photograph shows a camera high on the top structure
+    // looking forward and slightly down, which is all this is. Sprint 4 cannot mean anything
+    // until somebody measures it -- and a wrong sign here produces vision that looks
+    // plausible and is wrong, which is why every mount is drawn on the field view.
+    { "name": "limelight", "type": "Limelight3A",
+      "mount": { "xM": 0.15, "yM": 0, "zM": 0.25, "yawDeg": 0, "pitchDeg": 20 },
+
+      // WHAT EACH PIPELINE LOOKS FOR.
+      //
+      // A Limelight pipeline is configured in the camera's own web interface, so nothing in
+      // your code says what pipeline 0 or 1 detects -- it switches to one and trusts it. The
+      // simulator cannot know either, so both are declared here.
+      //
+      // PIPELINE 0 is the TeleOp's: "limelight.pipelineSwitch(0); // april tag pipeline".
+      // It was undeclared until now, so the simulator fell back to "colour, first piece type"
+      // and said so in the log on every start. That mattered more than it looked: a COLOUR
+      // pipeline reports no botpose, here and on a real Limelight, so getBotpose_MT2() would
+      // have returned nothing however well the camera was aimed.
+      //
+      // The pitch below is MEASURED now, and it was the other half of this. It read -20 -- 20
+      // deg DOWN, assumed from a photograph -- and from there no goal tag was in frame from
+      // anywhere on the field, because the tags sit at 0.749 m and a 42 deg frame pitched 20
+      // down reaches 1 deg above the horizon. The camera on this robot faces 20 deg UP. One
+      // sign, and ProbeTag goes from 0 of 4056 poses seeing a tag to 1097.
+      //
+      // It is the POLLEN test robot whose camera looks 20 deg down, which is right for a lens
+      // hunting balls on the floor and wrong for one hunting tags at chest height. That robot
+      // has no robot.json of its own yet; when it gets one, this is the number to be careful
+      // about, because the two are the same magnitude and opposite in sign.
+      //
+      // The other four numbers -- 0.15 m forward, on the centreline, 0.25 m up, yaw 0 -- are
+      // still ASSUMED. See open item 4.
+      //
+      // PIPELINE 1 is the ball-chasing OpMode's PIPELINE_INDEX. It is tuned for the yellow "pollen", which
+      // means it correctly sees NOTHING on the DECODE field: there is no piece called that
+      // there. Load test/fixtures/practice.field.json and it has something to find.
+      //
+      // Neither declares a threshold or any filters, and that is deliberate rather than
+      // unfinished: an undeclared filter is one nobody has measured, and every default here
+      // filters nothing. Sample your real ball in the Limelight web panel and add an "hsv"
+      // block when you have the numbers.
+      "pipelines": [
+        { "index": 0, "type": "apriltag" },
+        { "index": 1, "type": "color", "piece": "pollen" }
+      ]
+    }
+  ],
+
+  // What the robot DOES, as opposed to what is plugged into it. A hardware configuration has
+  // never contained this half, and it is the half that decides how the robot behaves.
+  "mechanisms": [
+    // The flywheel is the one that changes an outcome today.
+    //
+    // The whole shooting state machine is built on a heavy wheel: it waits to reach
+    // 1000 ticks/s, then watches for the velocity to DROP 80 below target to know an
+    // artifact has left, and sets FLYWHEEL_ALWAYS_ON = true because spinning up is not free.
+    // With no inertia declared, a simulated motor reaches any speed in 60 ms, the velocity
+    // never dips, and that state machine waits for a dip that never comes.
+    //
+    // wheelDiameterM and wheelMassKg are ASSUMED -- a 96 mm compliant wheel at 200 g. They
+    // are a tape measure and a kitchen scale away from being real, and they set the spin-up
+    // time directly, so they are the single most valuable pair of numbers to correct here.
+    // "ring" rather than "disc" because a compliant wheel carries its mass at the rim.
+    {
+      "name": "shooterFlywheel", "type": "flywheel", "motor": "shooter",
+      "wheelDiameterM": 0.096, "wheelMassKg": 0.20,
+      "motorToWheelRatio": 1.0, "inertiaShape": "ring"
+    },
+
+    // DERIVED from real field calibration, and it inverted the earlier guess.
+    //
+    // The shot table carries eleven (distance, velocity, hood position) rows
+    // measured with a tape measure on a real robot -- and at competition that robot scores
+    // every shot. So each row is a constraint: at that distance, with that exit speed, the
+    // hood angle has to be one that puts the ball in the goal. Solving each row for the
+    // angles that score and fitting a line through the eleven (position, angle) pairs gives
+    //
+    //     servo 0.0  ->  57.7 deg        servo 1.0  ->  46.3 deg      (1.5 deg RMS residual)
+    //
+    // NOTE THE DIRECTION. A HIGHER servo position is a FLATTER shot. That is why the table
+    // uses 0.1 up close and 1.0 far away, and it is the opposite of the 20-to-55 guessed
+    // here before, which had close shots at 20 degrees firing flat past a goal 1.4 m away.
+    //
+    // Still DERIVED and not measured: the chain runs through the assumed 96 mm flywheel, the
+    // 0.5 exit fraction, the assumed 0.30 m launch height and the goal's own +/- 3 in. A
+    // protractor against the hood face at servo 0 and servo 1 settles it in five minutes and
+    // is still worth doing -- but this is real field data rather than a guess, and it
+    // reproduces the 12-of-12 the robot actually scores.
+    {
+      "name": "hoodAngle", "type": "hood", "servo": "hood",
+      "angleAtZeroDeg": 57.7, "angleAtOneDeg": 46.3
+    },
+
+    // ASSUMED geometry, declared so Sprint 2 has somewhere to put artifacts. Nothing
+    // simulates an intake yet; the fidelity ledger lists it as absent rather than pretending.
+    {
+      "name": "frontIntake", "type": "intake", "motor": "intake",
+      "mouthWidthM": 0.30,
+      "mount": { "xM": 0.20, "yM": 0, "zM": 0.05, "pitchDeg": 0 }
+    },
+
+    // The indexer is what pushes an artifact into the flywheel, and it is the only signal a
+    // shot is wanted: the sequence sets it to full power when feeding starts and then watches
+    // the flywheel velocity for the dip that says one left. There is no "did it fire" sensor
+    // on a real robot either.
+    //
+    // artifactsPerSecond is ASSUMED. It caps how fast three shots can follow each other.
+    {
+      "name": "indexerFeeder", "type": "feeder", "motor": "indexer",
+      "feedsMechanism": "shooterFlywheel", "artifactsPerSecond": 3.0
+    }
+  ],
+
+  // MEASURED, and these are the important ones. Every pose here is lifted straight from
+  // The routine's own named poses, converted from inches to metres:
+  //
+  //   BFA_START_POSE   (49,  8,  90 deg)  ->  Blue Far
+  //   RFA_START_POSE   (95,  8,  90 deg)  ->  Red Far
+  //   BBA_START_POSE   (22, 123, 144 deg) ->  Blue Backup
+  //   RBA_START_POSE   (122,123,  37 deg) ->  Red Backup
+  //
+  // The path follower uses corner-origin coordinates in inches on a 144 inch field, which is the
+  // same handedness and origin this simulator uses in metres, so the conversion is a scale.
+  //
+  // The names matter: tools/autos.sh starts each routine from the pose whose name appears in
+  // the routine's own name, so BlueFarAuto and AllFarBlueFarAuto both begin at "Blue Far".
+  "startPoses": [
+    { "name": "Blue Far", "xM": 1.2446, "yM": 0.2032, "headingDeg": 90 },
+    { "name": "Red Far", "xM": 2.413, "yM": 0.2032, "headingDeg": 90 },
+    { "name": "Blue Backup", "xM": 0.5588, "yM": 3.1242, "headingDeg": 144 },
+    { "name": "Red Backup", "xM": 3.0988, "yM": 3.1242, "headingDeg": 37 }
+  ]
+}

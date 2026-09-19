@@ -1,0 +1,4 @@
+This file marks the root of a FTCKesselRun installation.
+Install.java walks up from the running code to find it, so the simulator
+knows where fields/, examples/ and the built pages are no matter what
+working directory it was started with.

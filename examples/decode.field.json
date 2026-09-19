@@ -1,0 +1,584 @@
+{
+  // DECODE, the 2025-2026 FTC game, as a field file.
+  //
+  // This used to be compiled into the simulator. It is data now, and it is one selectable
+  // field among however many you make -- but nothing about the numbers changed, and every one
+  // of them is still checked by ProbeField against the clause it came from.
+  //
+  // LENGTHS ARE IN INCHES. That is how a field is measured and how the manual writes it.
+  // Anything that would rather be exact can use the "M" form instead ("xM": 0.6096).
+  //
+  // The field itself is 144 by 144 in and is not configurable, because it is not a variable.
+  // x = 0 is the wall the BLUE GOAL stands against, y = 0 is the audience wall, and the origin
+  // is the corner -- the same frame Pedro Pathing uses in inches.
+  //
+  // THAT WALL IS THE RED ALLIANCE'S SIDE, and it is not a contradiction. This file
+  // used to leave this open; Figures 9-2 and 9-3 settle it, because they label every zone with
+  // its alliance. On the low-x side sit the RED alliance area, the RED loading zone, the RED
+  // base zone and the RED secret tunnel -- and the BLUE goal, the BLUE classifier and the BLUE
+  // gate zone. You score at the far end of the field from where you stand, and you park away
+  // from where you score. The base zones in this file were already named that way and were
+  // already right; the loading zones were named the other way round and have been corrected.
+
+  "name": "DECODE (2025-2026)",
+
+  // Manual 10.3.1: "Each ROBOT may be pre-loaded with up to 3 ARTIFACTS from their own
+  // ALLIANCE AREA pre-staged ARTIFACTS in C such that each ARTIFACT is in direct contact with
+  // the ROBOT." So one team's preload of three is the legal maximum, not an assumption they
+  // could tune. A robot.json asking for more is clamped to this.
+  "maxPreload": 3,
+
+  // ---- This file's frame, and FIRST's ---------------------------------------------------------
+  //
+  // A Limelight reports botpose in the frame of the field map it was given, and Limelight's FTC
+  // guide says that for FTC "(0,0,0) is the center of the field floor" and "the coordinate system
+  // for botPose matches the standard FTC coordinate system". This file's origin is a CORNER, so
+  // the two differ by a translation and a rotation.
+  //
+  // 90 IS DERIVED, NOT CHOSEN. It is the rotation that carries the AprilTag positions at the
+  // bottom of this file back onto the ones FIRST publish in AprilTagGameDatabase, and ProbeTag
+  // asserts exactly that, to a hundredth of an inch, on both tags. The transform is
+  // x_ftc = 72 - y, y_ftc = x - 72, in inches; as a rotation it is +90 degrees about the centre,
+  // which preserves handedness, so headings carry across as yaw + 90 with no sign flip.
+  //
+  // The default is 0, which is right for a field somebody tapes out in a classroom: its own frame
+  // IS the map frame and all that is needed is to move the origin to the middle. DECODE is the
+  // case that needs a rotation, because FIRST publish in their own axes.
+  "ftcFrameRotationDeg": 90,
+  "description": "Competition layout, Game Manual Part 2 V9/TU32 sections 9.7-9.9 and 10.3.1",
+
+  // ---- What the game pieces ARE ---------------------------------------------------------------
+  //
+  // MEASURED, both numbers, and they matter downstream: diameter decides whether a piece fits
+  // an intake mouth, and mass decides how much a shot costs the flywheel.
+  //
+  //   Manual 9.9: "ARTIFACTS are 5 in. (12.70 cm) nominal Gopher ResisDent polypropylene balls
+  //   in purple (am-3376a_purple) and green (am-3376a_green)."
+  //   AndyMark lists am-3376a at 0.165 lb = 74.8 g.
+  //
+  // The manual then qualifies the diameter: the manufacturer specifies 4.9 in +/- 0.25 at the
+  // mold seam, and warns artifacts are not perfectly spherical. Design an intake to 5 in and
+  // check it against 5.15.
+  //
+  // The colours are what a Limelight colour pipeline would key on, so they are the real ones
+  // rather than something that merely looks nice in the viewer.
+  "pieces": [
+    { "name": "green",  "colour": "#3FBF6F", "diameter": 5, "diameterTolerance": 0.25, "massKg": 0.0748 },
+    { "name": "purple", "colour": "#8E6FD8", "diameter": 5, "diameterTolerance": 0.25, "massKg": 0.0748 }
+  ],
+
+  // ---- Where they start -------------------------------------------------------------------------
+  //
+  // Manual 10.3.1: 24 purple and 12 green staged as follows, "with the MOTIFS starting from the
+  // middle of the FIELD and continuing toward the FIELD perimeter":
+  //
+  //   A. 3 ARTIFACTS on each SPIKE MARK -- near (audience side) GPP, middle PGP, far (goal
+  //      side) PPG
+  //   B. 3 ARTIFACTS (2P, 1G) in each LOADING ZONE, "biased against the FIELD perimeter
+  //      adjacent to the ALLIANCE AREA and closest to the corner arranged PGP"
+  //   C. 6 ARTIFACTS (4P, 2G) in each ALLIANCE AREA
+  //
+  // Group C is NOT here: the alliance areas are floor space outside the field. That is where a
+  // preload comes from, and the manual caps it -- "Each ROBOT may be pre-loaded with up to 3
+  // ARTIFACTS" -- so one team's preload of three is the legal maximum, not an assumption.
+  //
+  // So 24 pieces on the tiles: 18 on six spike marks, 6 in two loading zones.
+  //
+  // THE POSITIONS ARE MEASURED, NOT REASONED. The prose gives no coordinates, so the artifact
+  // centroids were found by colour in the manual's own Figure 9-5 at 3.92 px/in:
+  //
+  //   spike columns   x = 24 in and 120 in     the tile seams one tile in from each side wall
+  //   spike rows      y = 36, 60, 84 in        the centres of tile rows 2, 3 and 4
+  //   ball pitch      5.1 in                   one nominal diameter, so the three touch
+  //   loading zones   2.8 in off the side wall, stacked from the corner
+  //
+  // That measurement also settles what the prose leaves ambiguous. "Motifs starting from the
+  // middle of the FIELD" reads two ways, and the wrong one mirrors both alliances while looking
+  // entirely plausible. Figure 9-5 puts green at x = 29 on the blue near mark, so the largest x
+  // is the first letter. Blue counts down in x from the middle; red counts up.
+  //
+  // Independent corroboration, fitted to nothing: one team's own hand-tuned
+  // EAT_*_ARTIFACTS_POSE rows sit at y = 31/37/42, 56/59 and 82/84, and their sweeps run from
+  // x = 45 down to x = 15. The measured rows fall in the middle of that scatter and the pieces
+  // at x = 19/24/29 fall inside that sweep.
+  "staging": [
+    {
+      "piece": "green",
+      "at": [
+        [29, 36], [24, 60], [19, 84],          // blue: near GPP, middle PGP, far PPG
+        [115, 36], [120, 60], [125, 84],       // red, mirrored
+        [2.5, 7.5], [141.5, 7.5]               // the G of each loading zone's PGP
+      ]
+    },
+    {
+      "piece": "purple",
+      "at": [
+        [24, 36], [19, 36],                    // blue near   G P P
+        [29, 60], [19, 60],                    // blue middle P G P
+        [29, 84], [24, 84],                    // blue far    P P G
+        [120, 36], [125, 36],                  // red near
+        [115, 60], [125, 60],                  // red middle
+        [115, 84], [120, 84],                  // red far
+        [2.5, 2.5], [2.5, 12.5],               // red loading zone, P G P from the corner out
+        [141.5, 2.5], [141.5, 12.5]            // blue loading zone
+      ]
+    }
+  ],
+
+  // ---- The goals ----------------------------------------------------------------------------------
+  //
+  // SIZE IS EXACT, POSITION IS NOT, and the difference matters.
+  //
+  // Manual 9.7 gives the size to a tenth of an inch: "The opening of the GOAL is approximately
+  // 26.5 in. (67.30 cm) wide and 18.3 in. (46.45 cm) deep. The top lip of the GOAL is 38.75 in.
+  // (98.45 cm) from the surface of the TILE."
+  //
+  // The position is nowhere in the manual. The Event FIELD Setup Guide locates the goal by
+  // hardware -- "Place each GOAL Assembly onto the FIELD, making sure the GOAL Border Brackets
+  // slip over the FIELD perimeter" -- in the corners above tiles A6 and F6. Nobody measures a
+  // distance, so there is no distance to quote.
+  //
+  // So it is APPROXIMATED, from three estimates that were never fitted to each other:
+  //
+  //   Figure 9-5, measuring the goal footprint by colour       (12.6, 135.2)
+  //   Triangulating five hand-tuned blue shooting headings        ( 6.0, 135.4)
+  //   ...their five red ones, mirrored                         ( 9.1, 137.5)
+  //
+  // Along the wall those agree to about 2 in, from a schematic and two sets of hand-tuned poses
+  // that know nothing about each other. Across it they spread over about 6. This takes the mean:
+  // TREAT THE GOAL AS KNOWN TO ABOUT +/- 3 IN, which is a few degrees of aim at shooting range
+  // and matters if you are tuning a hood table against it.
+  //
+  // That the triangulation works at all is the strongest single check on the whole coordinate
+  // frame: BFA_FAR_SHOOTING_POSE is 121 in away and its heading points at the fitted goal to
+  // within 0.1 degrees.
+  //
+  // BEARING IS MEASURED NOW, and it is not the diagonal. It used to be reasoned: a 3-sided
+  // structure standing in a corner with two walls behind it can only open toward the field, and
+  // from a corner the only direction that is is the 45 degree diagonal. That reasoning was sound
+  // and the answer was 9 degrees out.
+  //
+  // The FTC SDK ships FIRST's own AprilTag poses for this season in AprilTagGameDatabase
+  // .getDecodeTagLibrary(), including an orientation quaternion per tag. The tag is on the front
+  // face of the goal, so its face normal IS the goal's bearing, and it comes out at 54 degrees
+  // from the alliance wall rather than 45 -- so -35.95 here rather than -45.
+  //
+  // Three independent things agree on that number and disagree with 45, which is why it is worth
+  // moving 15 autonomouses for:
+  //
+  //   the quaternion's own face normal                                  -35.95 deg
+  //   the tag's POSITION landing on the face plane      -35.95: 9.10 in along  (face at 9.15)
+  //                                                        -45: 9.04 in along
+  //   ...and landing CENTRED across it, which is what   -35.95: 0.35 in off centre
+  //   Figure 9-19's caption says it is                     -45: 1.08 in off centre
+  //
+  // Position and orientation are separate numbers in FIRST's file, so the second and third of
+  // those really are independent of the first.
+  //
+  // AND IT CONFIRMS THE POSITION. Taking the tag as given and stepping back half the opening
+  // depth along that normal puts the goal centre at (8.95, 135.75) -- 0.35 in from the mean of
+  // the three estimates above, from a source that knows nothing about any of them. That rests on
+  // one assumption, that the vertical front panel sits at half the opening depth from the
+  // opening's centre, so it is corroboration rather than a fourth measurement. But three
+  // estimates spread over 6 in with a fourth landing a third of an inch from their mean is not
+  // luck: TREAT THE GOAL AS KNOWN TO ABOUT AN INCH now, not three.
+  //
+  // THE OPENING IS A TRIANGLE, NOT A BOX. 9.7 says "a horizontal triangular shaped opening at
+  // the top" and Figure 9-9 captions its dimensions "Top View, Goal Opening Inside Dimensions":
+  // 26.5 in across the front face, 18.3 in back to the apex. openingWidth and openingDepth are
+  // those two numbers and Goal tests them as a triangle -- which halves the area of the target
+  // compared with the box they used to describe.
+  //
+  // WHICH EDGE IS THE FRONT IS NOT A GUESS. FIRST publish the pose of tag 20, and converted into
+  // this file's frame it lands 0.05 IN from the 26.5 in edge and about 10.5 in from either of
+  // the other two. The tag is on the front of the goal, so the 26.5 in edge is the front and the
+  // apex is the corner. That also settles which way round the triangle goes, which a figure
+  // measured by eye could not.
+  //
+  // ---- The BACKBOARD: the thing you actually aim at ---------------------------------------------
+  //
+  // A GOAL IS NOT A HOLE WITH A RIM ALL THE WAY ROUND, and modelling it as one lost every long
+  // shot. The front face -- the one with the tag -- stops at the lip, 38.75 in. The two walls
+  // behind it carry on up. 9.7: "The maximum height of the backboard with the FIRST Tech
+  // Challenge logo is 15 in. (38.10 cm) from the open top of the GOAL." So a shot that would
+  // sail clean over an open box hits the back, drops, and funnels in -- which is how the real
+  // thing is played and why teams aim high.
+  //
+  // MAXIMUM is the word that matters. Figure 9-8 and the ARENA overview both show a gable
+  // rather than a flat wall: the two rear walls rise from the lip at the front corners to a
+  // sawtooth peak over the apex. So 15 in is the height at the apex and the ends are level with
+  // the lip, and Goal.deflect interpolates between them.
+  //
+  // What is NOT modelled, and is in the ledger: the sawtooth itself (a ball catching a tooth
+  // does something this cannot), spin off the board, and the bounce constant -- that reuses
+  // Artifact.RESTITUTION, the one assumed foam-ball-against-a-hard-thing number this project
+  // has, rather than inventing a second one for polypropylene sheet.
+  //
+  // ---- What happens to it once it is in --------------------------------------------------------
+  //
+  // The CLASSIFIER, manual 9.8. A scored artifact used to stop at the mouth and never move
+  // again; it now enters at the SQUARE, runs down the RAMP, and queues behind the GATE until a
+  // robot pushes it. So the second half of a DECODE cycle -- getting your own artifacts back --
+  // costs something, which it did not before.
+  //
+  // The geometry is NOT repeated here. "ramp" and "gate" name structures declared above, so
+  // there is one set of measurements and no way for the thing a robot collides with to drift
+  // away from the thing an artifact rolls down.
+  //
+  // CAPACITY IS THE MANUAL'S 9, and the measured ramp independently holds exactly 9. 9.8.2 says
+  // "the RAMP can fit up to 9 CLASSIFIED ARTIFACTS before newly entered ARTIFACTS will
+  // OVERFLOW" and never says how long the ramp is. Working it the other way, from the footprint
+  // measured off Figure 9-3 and the gate band measured with it: an artifact resting against the
+  // closed gate sits 6.0 in up the ramp, they stack at one 5 in diameter of pitch, and the
+  // entry point at the SQUARE is 47.5 in up. 6.0 + 8 x 5 = 46.0 fits; a tenth would need 51.0
+  // and does not. Nine, from numbers that never saw the manual's nine. ProbeClassifier asserts
+  // it, and it is the strongest single check on the ramp footprint.
+  "goals": [
+    { "name": "Blue", "x": 9.2,   "y": 136, "bearingDeg": -35.95,
+      "openingWidth": 26.5, "openingDepth": 18.3, "lipHeight": 38.75, "backboardHeight": 15,
+      "classifier": { "ramp": "Blue CLASSIFIER", "gate": "Blue GATE", "capacity": 9 } },
+    { "name": "Red",  "x": 134.8, "y": 136, "bearingDeg": -144.05,
+      "openingWidth": 26.5, "openingDepth": 18.3, "lipHeight": 38.75, "backboardHeight": 15,
+      "classifier": { "ramp": "Red CLASSIFIER", "gate": "Red GATE", "capacity": 9 } }
+  ],
+
+  // ---- The things a robot can hit ------------------------------------------------------------
+  //
+  // A "goal" above is an OPENING: a rectangle in space a shot can pass into. It has no walls, no
+  // footprint and no back, which was fine while nothing on this field had shape. Three things do,
+  // and a robot meets all three of them: the GOAL is a 54 in tower standing in the corner, the
+  // CLASSIFIER is a 50 in ramp bolted along the side wall, and the GATE is the lever at the foot
+  // of that ramp that a robot has to push to get its artifacts back.
+  //
+  // A structure is a FOOTPRINT and a HEIGHT. The footprint is a polygon in this file's frame, in
+  // inches; the height is how far the solid rises above the tile. Two numbers instead of one --
+  // "height": [a, b] -- makes the top a slope running from the FIRST footprint vertex to the
+  // LAST, which is how a ramp is written. "baseHeight" lifts the bottom off the floor.
+  //
+  // "blocksRobot" is what keeps this honest. The simulator stops a robot at anything that says
+  // true, the same way it stops one at a wall. Anything that says false is drawn and is not
+  // solid, and has to say why -- because furniture a robot drives through is a lie a student
+  // cannot see through, and the only thing here allowed to be one is the GATE, which is a
+  // mechanism that opens when pushed and which nothing here actuates.
+  //
+  // ---- The GOAL, manual 9.7 --------------------------------------------------------------------
+  //
+  // "The GOAL is an approximately 27 in. (68.60 cm) by 27 in. (68.60 cm) by 54 in. (137.15 cm)
+  // tall structure ... The GOAL is a 3-sided structure with a horizontal triangular shaped
+  // opening at the top."
+  //
+  // HEIGHT IS ARITHMETIC ON TWO EXACT NUMBERS, not the loose 54. Manual 9.7 gives the lip at
+  // 38.75 in and says "the maximum height of the backboard with the FIRST Tech Challenge logo is
+  // 15 in. (38.10 cm) from the open top of the GOAL". 38.75 + 15 = 53.75, and the manual rounds
+  // that to 54 in the sentence above. The two numbers Figure 9-9 dimensions win over the one the
+  // prose rounds.
+  //
+  // THE FOOTPRINT IS THE OPENING, DROPPED TO THE FLOOR. The manual dimensions the opening
+  // (26.5 wide, 18.3 deep) and nothing else about the plan, so the triangle below is built from
+  // the pose this file already carries -- centre, bearing, width, depth -- and then pushed out by
+  // the 0.39 in the manual gives for the corrugated sheet. Its apex points into the corner.
+  //
+  // THAT TRIANGLE IS NOT A RIGHT ANGLE, and that is the interesting part. A structure standing
+  // in a square corner ought to have a 90 degree apex; this one has 72, because a base of 26.5
+  // with a depth of 18.3 cannot have a right angle at the apex at all -- 18.3 is more than half
+  // of 26.5. So the GOAL does not sit flat against both walls, which is the same fact FIRST's
+  // AprilTag quaternion states when it puts the face at 54 degrees from the alliance wall rather
+  // than 45. Two independent sources, one a dimension and one an orientation, both refusing 45.
+  //
+  // AND THE FLOOR TAPE AGREES. The DEPOT is a 30 in line along the base of the goal face (see the
+  // tape section below); measured off Figure 9-2 at 5x it runs at 55.6 degrees, against the 54.05
+  // this triangle's face has. Three sources now, and the third is a strip of gaffer tape in a
+  // schematic that knows nothing about a quaternion.
+  //
+  // WHAT IS NOT MODELLED: the manual's 27 by 27 is an overall bounding box and this triangle's is
+  // 23.9 by 22.7. The missing few inches are the base frame and the GOAL Border Brackets that
+  // slip over the FIELD perimeter, and they sit BEHIND the goal in the corner where no robot can
+  // reach. Also absent: the archway in the side wall the artifacts leave through, and the
+  // backboard as a surface -- a shot still cannot bank off it, which the ledger already says.
+  //
+  // ---- The CLASSIFIER, manual 9.8 ---------------------------------------------------------------
+  //
+  // "The CLASSIFIER is a structure attached to the GOAL which has 3 main components: the SQUARE,
+  // RAMP, and GATE." The RAMP "can fit up to 9 CLASSIFIED ARTIFACTS before newly entered
+  // ARTIFACTS will OVERFLOW", and the SQUARE is "a location at the top of the RAMP at which
+  // ARTIFACT scoring is assessed".
+  //
+  // THE FOOTPRINT IS MEASURED, off Figure 9-3 -- a true top view of this corner at 8.4 px/in,
+  // twice the resolution of Figure 9-2 and calibrated on the tile seams, which are exact at 24
+  // in. The same calibration puts the red base zone at 29.3-47.4 by 24.4-42.6 in, against the
+  // 28.6-46.6 by 24.5-42.5 this file already had from Figure 9-2. Agreeing to 0.7 in from a
+  // different figure is what says the calibration is sound.
+  //
+  //   along the wall    x = 0 to 8.1      7.84 in from Figure 9-3, 8.42 from Figure 9-2, meaned
+  //   the gate end      y = 70            Figure 9-3 says 70.0, Figure 9-2 says 69.4
+  //   the goal end      y = 120           where the goal's own front face corner lands
+  //
+  // THE LENGTH IS ITS OWN CHECK. 50 in of ramp holding 9 nominal 5 in artifacts is 45 in of balls
+  // and 5 in of gate hardware. The manual states the capacity and never states the length, so the
+  // two numbers are independent and they agree.
+  //
+  // THE HEIGHTS ARE THE WEAKEST NUMBERS HERE and are labelled so. 28 in at the SQUARE is measured
+  // off Figure 9-10, whose classifier is outlined in green, against the goal's own 38.75 in lip
+  // in the same image -- so the scale comes from the picture rather than from an assumption, but
+  // the picture has perspective in it. TREAT 28 AS +/- 2 IN. 5.5 in at the gate end is not
+  // measured at all: it is the manual's own maximum gate contact height, which is the top of the
+  // structure at that end by definition.
+  //
+  // ---- The GATE, manual 9.8.3 --------------------------------------------------------------------
+  //
+  // "The GATE is a ROBOT-activated, push to open mechanism... When closed, the height of the
+  // contact area of the GATE above the surface of the TILE ranges from approximately 3.75 in.
+  // (9.55 cm) to 5.5 in. (14.00 cm) and when open the contact point is approximately 3 in.
+  // (7.60 cm) above the TILES. The total horizontal displacement required to move the GATE from
+  // closed to open is approximately 2 in. (5.10 cm)."
+  //
+  // Those four numbers are the whole robot-facing specification of the gate, and the manual
+  // spends a caution box on the one that matters: "TEAMS are encouraged to design their ROBOTS
+  // with a large vertical surface... It is particularly important that this panel extends up to
+  // the high end of the interface range approximately 5.5 in." So the contact band is 3.75 to
+  // 5.5 in, and that is what this structure is: a solid that starts 3.75 in off the floor.
+  //
+  // WHERE IT IS comes from the GATE ZONE, the only part of the gate the manual dimensions -- 10
+  // in long by 2.75 in wide, and found in the same place by both figures (x 13.3-23.5,
+  // y 70.6-73.5 off Figure 9-3; x 14.5-24.0, y 70.9-73.1 off Figure 9-2). The arm runs back from
+  // there to the ramp it is bolted to, which is why this footprint starts at the ramp's edge.
+  //
+  // WHICH END OF THAT 2.75 IN BAND IS CLOSED IS NOT WRITTEN DOWN, so it is not claimed here. The
+  // 2 in of travel happens somewhere inside this footprint; the manual says how far and how high,
+  // and never says which way.
+  //
+  // blocksRobot IS FALSE, and this is the one place in this file where drawn-but-not-solid is the
+  // honest answer rather than a shortcut. The gate is a thing you push through. Making it solid
+  // would build a wall across the exit of your own classifier and teach a team that the artifacts
+  // cannot be recovered at all, which is a worse lie than the one it would fix.
+  "structures": [
+    { "name": "Blue GOAL", "colour": "blue", "blocksRobot": true,
+      "footprint": [[1.25, 141.76], [8.7, 119.05], [25.15, 141.74]], "height": 53.75 },
+    { "name": "Red GOAL", "colour": "red", "blocksRobot": true,
+      "footprint": [[142.75, 141.76], [135.3, 119.05], [118.85, 141.74]], "height": 53.75 },
+
+    // Goal end listed first and gate end last, because that is the order "height" slopes in.
+    { "name": "Blue CLASSIFIER", "colour": "blue", "blocksRobot": true,
+      "footprint": [[0, 120], [8.1, 120], [8.1, 70], [0, 70]], "height": [28, 5.5] },
+    { "name": "Red CLASSIFIER", "colour": "red", "blocksRobot": true,
+      "footprint": [[144, 120], [135.9, 120], [135.9, 70], [144, 70]], "height": [28, 5.5] },
+
+    { "name": "Blue GATE", "colour": "blue", "blocksRobot": false,
+      "footprint": [[8.1, 70.75], [23.5, 70.75], [23.5, 73.5], [8.1, 73.5]],
+      "baseHeight": 3.75, "height": 5.5 },
+    { "name": "Red GATE", "colour": "red", "blocksRobot": false,
+      "footprint": [[135.9, 70.75], [120.5, 70.75], [120.5, 73.5], [135.9, 73.5]],
+      "baseHeight": 3.75, "height": 5.5 }
+  ],
+
+  // ---- Tape -----------------------------------------------------------------------------------------
+  //
+  // Only the lines whose geometry is actually sourced. Nothing here is placed by eye: a scoring
+  // boundary drawn in the wrong place is worse than one not drawn at all, and each block below
+  // says which figure it came from and what checks it.
+  //
+  // SPIKE MARKS, manual 9.3: "1 of 6 white tape marks 10 in. (25.40 cm) long used to identify
+  // the placement of 3 ARTIFACTS before the MATCH", centred on the tile seams measured above.
+  //
+  // LOADING ZONE, manual 9.3: "approximately 23 in. (58.40 cm) wide by 23 in. (58.40 cm) deep
+  // ... bounded by white tape and the adjoining FIELD perimeters".
+  "lines": [
+    { "name": "spike mark", "colour": "white", "width": 1, "points": [[19, 36], [29, 36]] },
+    { "name": "spike mark", "colour": "white", "width": 1, "points": [[19, 60], [29, 60]] },
+    { "name": "spike mark", "colour": "white", "width": 1, "points": [[19, 84], [29, 84]] },
+    { "name": "spike mark", "colour": "white", "width": 1, "points": [[115, 36], [125, 36]] },
+    { "name": "spike mark", "colour": "white", "width": 1, "points": [[115, 60], [125, 60]] },
+    { "name": "spike mark", "colour": "white", "width": 1, "points": [[115, 84], [125, 84]] },
+
+    { "name": "red loading zone", "colour": "white", "width": 1,
+      "points": [[23, 0], [23, 23], [0, 23]] },
+    { "name": "blue loading zone", "colour": "white", "width": 1,
+      "points": [[121, 0], [121, 23], [144, 23]] },
+
+    // ---- LAUNCH LINES: where you are allowed to shoot from ------------------------------------
+    //
+    // Manual 9.3: "LAUNCH ZONE: infinitely tall triangular volumes bounded by LAUNCH LINES and
+    // the FIELD perimeter. There are 2 LAUNCH ZONES: the LAUNCH ZONE on the audience side of the
+    // FIELD spans a section 2 TILES wide and 1 TILE deep and the LAUNCH ZONE on the GOAL side of
+    // the FIELD spans a section 6 TILES wide by 3 TILES deep."
+    //
+    // Tiles, not coordinates -- which is why these were left out of the first version of this
+    // file rather than guessed. Measuring Figure 9-2 turns the tile counts into vertices and
+    // confirms them at the same time, at 3.97 px/in across and 4.04 along:
+    //
+    //   big triangle    top edge the full field width, apex measured at (72.3, 72.6)
+    //                   -> 6 tiles wide, 3 deep, apex on the centre line. Exactly as stated.
+    //   small triangle  base measured (49.9, 0) to (95.3, 0), apex (72.5, 21.8)
+    //                   -> 2 tiles wide, 1 deep. The measurement runs about an inch short at
+    //                      each edge because the olive fill stops at the INSIDE of the 1 in
+    //                      tape, which is itself a check that the right thing was measured.
+    //
+    // Only the two diagonals are tape. The third side of each triangle is the field perimeter.
+    { "name": "launch line, goal side", "colour": "white", "width": 1,
+      "points": [[0, 144], [72, 72], [144, 144]] },
+    { "name": "launch line, audience side", "colour": "white", "width": 1,
+      "points": [[48, 0], [72, 24], [96, 0]] },
+
+    // ---- BASE ZONES: where you park ---------------------------------------------------------
+    //
+    // Manual 9.3: "BASE ZONE: an 18 in. +/- 0.125 in. wide by 18 in. +/- 0.125 in. deep
+    // infinitely tall volume bounded by ALLIANCE colored tape", and G427 protects it in the last
+    // 20 seconds -- so this is the endgame parking square.
+    //
+    // The SIZE is exact; the POSITION is nowhere in the manual, so it is measured off Figure 9-2
+    // like everything else here. The red square comes out 18.7 by 17.8 in against a stated 18 by
+    // 18 -- inside the calibration error -- centred at (37.6, 33.5). The blue square's left edge
+    // measures 97.1, and the mirror of the red about the centre line is 97.1: they agree to a
+    // tenth of an inch without being fitted to each other, so the blue one is placed by mirroring
+    // rather than by a measurement its own tape shares with the secret tunnel line.
+    //
+    // WHICH ALLIANCE IS WHICH follows Figure 9-2, where the red base zone sits on the same side
+    // as the blue GOAL -- you park away from where you score. Read in this file's frame, where
+    // x = 0 is the wall the blue goal stands against, that puts red at the low-x end --
+    // which is the same side as the red alliance area, and Figure 9-3 labels it RED BASE ZONE.
+    { "name": "red base zone", "colour": "red", "width": 1,
+      "points": [[28.6, 24.5], [46.6, 24.5], [46.6, 42.5], [28.6, 42.5], [28.6, 24.5]] },
+    { "name": "blue base zone", "colour": "blue", "width": 1,
+      "points": [[97.4, 24.5], [115.4, 24.5], [115.4, 42.5], [97.4, 42.5], [97.4, 24.5]] },
+
+    // ---- The DEPOT: a LAUNCH LINE nobody could measure until now -------------------------------
+    //
+    // Manual 9.3: "DEPOT: the white tape approximately 30 in. (76.20 cm) long which spans the
+    // entire length of the GOAL front face and is located at the base of the GOAL. The DEPOT tape
+    // is a LAUNCH LINE."
+    //
+    // THIS FILE USED TO REFUSE TO DRAW IT, and the reason it gave was right: "the goal-side
+    // launch line runs through that same corner at the same 45 degrees, so the sample is a mix of
+    // the two, and the window it was measured in is about 29 in across -- it would have produced
+    // that number whatever was in it. Absent until somebody has a figure that separates them."
+    //
+    // Figure 9-2 separates them, at 5x. The two lines cross in a plain X, and they are not
+    // parallel at all:
+    //
+    //   the LAUNCH LINE   starts at the corner (0, 144) and runs at 45 degrees to (72, 72)
+    //   the DEPOT         starts 26 in along the wall and runs at 55.6 degrees, 29.8 in long
+    //
+    // Every white pixel inside x 1-40, y 112-143 was classified by whether it satisfies
+    // x + y = 144, which is the launch line and nothing else. What was left is one clean stroke
+    // from (25.5, 143) to (9.2, 119.2): 29.8 in against the manual's 30, at 55.6 degrees against
+    // the 54.05 the goal's own face has. The old note's worry was that the measurement could not
+    // tell the two apart; it can, and the answer is 10 degrees away from the line it was afraid
+    // of being contaminated by.
+    //
+    // SO IT IS DERIVED, NOT MEASURED, and deliberately. The endpoints below are the goal's own
+    // front face centre stepped 15 in each way along the face bearing -- which is what the manual
+    // says the depot IS, and which keeps the tape attached to the goal if anyone ever moves it.
+    // The measurement above is the check on that derivation, not the source of it: derived
+    // (7.80, 118.49)-(25.41, 142.77), measured (9.2, 119.2)-(25.5, 143.0), within 1.4 in
+    // end to end.
+    { "name": "blue depot", "colour": "white", "width": 1,
+      "points": [[7.8, 118.49], [25.41, 142.77]] },
+    { "name": "red depot", "colour": "white", "width": 1,
+      "points": [[118.59, 142.77], [136.2, 118.49]] },
+
+    // ---- GATE ZONE: the square you stand in to open your own gate ------------------------------
+    //
+    // Manual 9.3: "GATE ZONE: a 2.75 in. (7.00 cm) wide by 10 in. (25.40 cm) long infinitely tall
+    // volume bounded by 2 parallel 10 in. (25.40 cm) long ALLIANCE colored tape segments adjacent
+    // to each GATE." G424 makes it OFF LIMITS -- "a ROBOT may not contact... an opponent ROBOT if
+    // either ROBOT is in the opponent's GATE ZONE" -- so this is protected floor, and a routine
+    // that parks a robot across it is one that draws fouls.
+    //
+    // TWO SEGMENTS, NOT A BOX. The manual says two parallel tape segments; the ends are open. So
+    // these are two lines rather than one rectangle, which is also what the figures show.
+    //
+    // MEASURED TWICE, INDEPENDENTLY, and they agree to under an inch: Figure 9-3 (8.4 px/in)
+    // gives x 13.3-23.5, y 70.6-73.5; Figure 9-2 (4.1 px/in) gives x 14.5-24.0, y 70.9-73.1. The
+    // values below are the stated 10 by 2.75 placed at the mean of the two.
+    //
+    // THE COLOUR IS THE ALLIANCE'S, and on this wall that is BLUE even though the loading zone,
+    // the base zone and the secret tunnel two feet away are all RED. Figure 9-3 labels them in
+    // exactly that combination. You open your own gate, and your gate is at the foot of your own
+    // goal, which stands at the far end of the opposition's side.
+    { "name": "blue gate zone", "colour": "blue", "width": 1,
+      "points": [[13.5, 70.75], [23.5, 70.75]] },
+    { "name": "blue gate zone", "colour": "blue", "width": 1,
+      "points": [[13.5, 73.5], [23.5, 73.5]] },
+    { "name": "red gate zone", "colour": "red", "width": 1,
+      "points": [[130.5, 70.75], [120.5, 70.75]] },
+    { "name": "red gate zone", "colour": "red", "width": 1,
+      "points": [[130.5, 73.5], [120.5, 73.5]] },
+
+    // ---- SECRET TUNNEL ZONE: where the classifier gives them back ------------------------------
+    //
+    // Manual 9.3: "an approximately 46.5 in. (118.10 cm) long by approximately 6.125 in. (15.55
+    // cm) wide infinitely tall volume bounded by ALLIANCE colored tape, the GOAL assembly, the
+    // LOADING ZONE, and the adjoining FIELD perimeter." G425 protects it the way G424 protects
+    // the gate zone.
+    //
+    // ONLY ONE SIDE OF IT IS TAPE. Read the boundary list: the wall, the loading zone and the
+    // goal assembly close three sides, so the only line to draw is the long one, 6.125 in off the
+    // perimeter. Drawing a rectangle here would be inventing three edges the manual explicitly
+    // attributes to other things.
+    //
+    // BOTH ENDS ARE MEASURED AND THE LENGTH CHECKS OUT. Figure 9-3 puts the far end at y = 70.0
+    // -- the same place it puts the foot of the classifier, which is the "GOAL assembly" the
+    // manual means -- and the near end at y = 24.2 against the loading zone tape. 70.0 - 23.5 is
+    // 46.5, which is the manual's stated length to a tenth of an inch, from two ends measured
+    // separately. Figure 9-2 agrees at 69.4 and 25.3.
+    //
+    // AND THE ALLIANCE IS THE OTHER ONE. Manual 9.8.3: the GATE "prevents CLASSIFIED ARTIFACTS
+    // from exiting the RAMP into the opposing ALLIANCE'S SECRET TUNNEL ZONE". So the blue
+    // classifier, on this wall, empties into the RED secret tunnel -- which is why Figure 9-3
+    // labels this strip RED while the gate zone at the top of it is blue.
+    { "name": "red secret tunnel zone", "colour": "red", "width": 1,
+      "points": [[6.125, 23.5], [6.125, 70]] },
+    { "name": "blue secret tunnel zone", "colour": "blue", "width": 1,
+      "points": [[137.875, 23.5], [137.875, 70]] }
+  ],
+
+  // ---- AprilTags ----------------------------------------------------------------------------------
+  //
+  // These were absent because "the ids and their poses are not written down anywhere this project
+  // has read". They are, and by FIRST: the SDK we already compile against ships
+  //
+  //   Vision/org/firstinspires/ftc/vision/apriltag/AprilTagGameDatabase.getDecodeTagLibrary()
+  //
+  // with a position vector and an orientation quaternion for tags 20 and 24. That is a primary
+  // source and it beats measuring a figure, so the numbers below are FIRST's, converted into this
+  // file's frame and nothing else.
+  //
+  //   FIRST, field-centre origin, inches      this file, corner origin, inches
+  //   20 BlueTarget (-58.3727, -55.6425, 29.5)   ->  (16.3575, 130.3727, 29.5)
+  //   24 RedTarget  (-58.3727,  55.6425, 29.5)   ->  (127.6425, 130.3727, 29.5)
+  //
+  // The conversion is x = Y + 72, y = 72 - X, which is a rotation and not a reflection, so
+  // headings carry across without a sign flip. It is anchored by Figure 9-18, which shows both
+  // GOALS on the wall opposite the audience with tag 20 on the LEFT as the audience sees it --
+  // and this file's frame has y = 0 at the audience and +x to the audience's right, so the blue
+  // goal at x = 9.2 is on the left. Both readings agree.
+  //
+  // HEIGHT, CHECKED TWICE. FIRST gives the tag centre at 29.5 in. Figure 9-19 dimensions it as
+  // 9.25 in below a reference line, and the lip is 38.75 in: 38.75 - 9.25 = 29.50. A figure
+  // caption and a source file, agreeing exactly, on a number neither derives from the other.
+  //
+  // SIZE IS 6.5 IN, NOT THE 8.125 THE PROSE GIVES, and the difference is not a discrepancy.
+  // Manual 9.10 says "8.125 in. square targets"; Figure 9-19 dimensions the black square at
+  // 6.5 in; AprilTagMetadata documents tagsize as "measured black edge to black edge" and FIRST
+  // set it to 6.5. A 36h11 tag is 8 modules of black plus a 1-module white quiet zone all round,
+  // which is 10 modules -- and 6.5 / 8.125 is exactly 0.8. The printed square is 8.125 and the
+  // part a detector solves against is 6.5, which is the one that belongs here.
+  //
+  // WHICH GOAL IS WHICH follows FIRST's own names: BlueTarget is where BLUE scores, and this file
+  // names its goals the same way. The separate question of whether the wall at x = 0 is the blue
+  // ALLIANCE wall is a known open question, and this does not settle it --
+  // both corners hold an identical goal, so no geometry turns on it.
+  //
+  // IDS 21, 22 AND 23 ARE DELIBERATELY ABSENT. They are on the OBELISK, which stands outside the
+  // FIELD, and manual 9.10 says the OBELISK tag "is not recommended for ROBOT navigational use as
+  // the exact placement location may vary from MATCH to MATCH". FIRST agree with themselves:
+  // those three are the only entries in getDecodeTagLibrary() with NO field position at all. A
+  // tag whose author declines to place it is not one this file gets to place either. They are
+  // what identifies the MOTIF, which is a different job and not a navigational one.
+  "aprilTags": [
+    { "id": 20, "family": "36h11", "size": 6.5,
+      "x": 16.3575, "y": 130.3727, "z": 29.5, "yawDeg": -35.95, "pitchDeg": 0 },
+    { "id": 24, "family": "36h11", "size": 6.5,
+      "x": 127.6425, "y": 130.3727, "z": 29.5, "yawDeg": -144.05, "pitchDeg": 0 }
+  ]
+}

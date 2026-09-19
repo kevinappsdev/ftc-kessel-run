@@ -1,0 +1,55 @@
+{
+  // A two-motor tank drive, which is what a rookie team actually builds first.
+  //
+  // WHY THIS FILE EXISTS
+  // --------------------
+  // FIRST's BasicOpMode_Linear is a two-motor tank sample and it is the first OpMode most
+  // students ever read. Until the drivetrain abstraction landed it drove two of four mecanum
+  // wheels here, so the robot crabbed sideways when the sticks disagreed and behaved nothing
+  // like the thing on the bench. This is the robot that sample is written for.
+  //
+  // MEASURED, DERIVED, ASSUMED
+  // --------------------------
+  // Nothing here is measured off a real robot, because this is a fixture rather than a team's
+  // machine. It is the goBILDA Strafer-sized frame the stand-in base has always used, with the
+  // mecanum wheels swapped for plain ones:
+  //
+  //   trackM 0.36        ASSUMED -- a typical 18 in frame with the wheels near the edges
+  //   wheelbaseM 0.32    ASSUMED
+  //   wheelRadiusM 0.048 goBILDA 96 mm wheel, the common FTC choice
+  //   massKg 15.0        ASSUMED -- where a competitive robot lands once it has a mechanism
+  //
+  // THE MOTOR NAMES are FIRST's: their two-motor samples call them "left_drive" and
+  // "right_drive". Their four-motor mecanum sample uses different names again, which is why
+  // this file is separate from examples/first-samples.robot.json rather than trying to be both.
+  //
+  // "reversed": true ON THE LEFT is a fact about the build, not a preference. The two sides of
+  // a drive base are mirror images, so a positive shaft rotation drives the left side
+  // backwards. It is exactly why every FTC tank sample calls setDirection(REVERSE) on the left
+  // motor -- the student's call cancels the mounting, here as on their robot, and forgetting it
+  // makes this robot spin on the spot too.
+
+  "name": "Tank starter",
+
+  "chassis": {
+    "type": "tank",
+    "massKg": 15.0,
+    "trackM": 0.36,
+    "wheelbaseM": 0.32,
+    "wheelRadiusM": 0.048,
+    "robotHalfExtentM": 0.229
+  },
+
+  "devices": [
+    { "name": "left_drive",  "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.left",  "reversed": true },
+    { "name": "right_drive", "type": "DcMotorEx", "motor": "YJ_312",
+      "role": "drive.right" },
+
+    { "name": "imu", "type": "IMU", "logoDirection": "UP", "usbDirection": "FORWARD" }
+  ],
+
+  "startPoses": [
+    { "name": "Centre", "xM": 1.83, "yM": 0.60, "headingDeg": 90 }
+  ]
+}
